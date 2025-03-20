@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  mock-services:
+    build:
+      context: ./mock-services
+      dockerfile: Dockerfile
+    ports:
+      - "1143:1143"
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - IMAP_HOST=mock-services
+      - IMAP_PORT=1143
+      - IMAP_USER=test@example.com
+      - IMAP_PASSWORD=test123
+      - IMAP_TLS=false
+      - EMAIL_FROM=${EMAIL_FROM}
+      - EMAIL_SUBJECT=${EMAIL_SUBJECT}
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    depends_on:
+      - mock-services
+
+  bot:
+    build:
+      context: ./bot
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=development
+      - BOT_TOKEN=${BOT_TOKEN}
+      - API_URL=http://server:3000
+    volumes:
+      - ./bot:/app
+      - /app/node_modules
+    depends_on:
+      - server 
