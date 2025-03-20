@@ -19,7 +19,7 @@ export class ImapService implements OnModuleInit, OnModuleDestroy {
     await this.addTestEmail();
   }
 
-  private async addTestEmail() {
+  async addTestEmail() {
     await this.imapServer.appendEmail('INBOX', {
       from: 'visa@notifications.visa.com',
       to: 'test@example.com',
