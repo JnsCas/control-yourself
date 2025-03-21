@@ -1,6 +1,6 @@
 import { Telegraf } from 'telegraf';
 import * as dotenv from 'dotenv';
-import { startCommand, helpCommand } from './commands';
+import { startCommand, helpCommand, testCommand } from './commands';
 
 dotenv.config();
 
@@ -13,6 +13,7 @@ const bot = new Telegraf(process.env.BOT_TOKEN);
 // Register commands
 bot.command('start', startCommand);
 bot.command('help', helpCommand);
+bot.command('test', testCommand);
 
 // Error handling
 bot.catch((err, ctx) => {

@@ -56,12 +56,12 @@ services:
     build:
       context: ./bot
       dockerfile: Dockerfile
+    command: sh -c "cd /app && npm run watch"
     environment:
       - NODE_ENV=development
-      - BOT_TOKEN=${BOT_TOKEN}
+      - BOT_TOKEN
       - API_URL=http://server:3000
     volumes:
       - ./bot:/app
-      - /app/node_modules
     depends_on:
       - server 

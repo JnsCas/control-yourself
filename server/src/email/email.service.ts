@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { EmailParserService } from './email-parser.service';
 import { ImapClientAbstract } from '../imap/imap.client.abstract';
+
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
@@ -18,7 +19,7 @@ export class EmailService {
       const transactions = [];
       for (const email of emails) {
         try {
-          const transaction = this.emailParser.parseEmailContent(email);
+          const transaction = this.emailParser.parseEmailContent(email.text);
           transactions.push(transaction);
         } catch (error) {
           this.logger.error(`Failed to parse email: ${error.message}`);
