@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  mock-services:
+    platform: linux/amd64
+    build:
+      context: ./mock-services
+      dockerfile: Dockerfile
+      args:
+        MOCKSERVER_PORT: ${MOCK_SERVICES_PORT:-3001}
+    command: sh -c "/wait && cd /app/server && npx ts-node-dev -r tsconfig-paths/register --inspect=0.0.0.0:1330 -P ./tsconfig.json src/main.ts"
+    environment:
+      - MOCKSERVER_PORT=3001
+      - NODE_ENV=development
+      - IMAP_HOST=http://mock-services
+      - IMAP_PORT=1143
+      - IMAP_USER=test@example.com
+      - IMAP_PASSWORD=test123
+      - IMAP_TLS=false
+      - EMAIL_FROM=${EMAIL_FROM}
+      - EMAIL_SUBJECT=${EMAIL_SUBJECT}
+    ports:
+      - "${MOCK_SERVICES_PORT:-3001}:3001"
+      - '1330:1330'
+    volumes:
+      - ./mock-services:/app/server
+
+  server:
+    platform: linux/amd64
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+      args:
+        SERVER_PORT: ${SERVER_PORT:-3000}
+    command: sh -c "/wait && cd /app/server && npx ts-node-dev -r tsconfig-paths/register --inspect=0.0.0.0:1339 -P ./tsconfig.json src/main.ts"
+    environment:
+      - SERVER_PORT=3000
+      - NODE_ENV=development
+      - IMAP_HOST=http://mock-services
+      - IMAP_PORT=1143
+      - IMAP_USER=test@example.com
+      - IMAP_PASSWORD=test123
+      - IMAP_TLS=false
+      - EMAIL_FROM=${EMAIL_FROM}
+      - EMAIL_SUBJECT=${EMAIL_SUBJECT}
+      - MOCKSERVER_PORT=3001
+    ports:
+      - "${SERVER_PORT:-3000}:3000"
+      - '1339:1339'
+    volumes:
+      - ./server:/app/server
+    depends_on:
+      - mock-services
+
+  bot:
+    build:
+      context: ./bot
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=development
+      - BOT_TOKEN=${BOT_TOKEN}
+      - API_URL=http://server:3000
+    volumes:
+      - ./bot:/app
+      - /app/node_modules
+    depends_on:
+      - server 

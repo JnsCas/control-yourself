@@ -5,9 +5,9 @@ import { ConfigService } from '@nestjs/config';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
-  const port = configService.get('SERVER_PORT') || 3000;
+  const port = configService.get('SERVER_PORT') || 3001;
   
   await app.listen(port);
-  console.log(`Server running on port ${port}`);
+  console.log(`Mock services running on port ${port}`);
 }
 bootstrap(); 
