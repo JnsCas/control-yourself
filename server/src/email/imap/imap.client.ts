@@ -1,12 +1,14 @@
-import { Injectable, OnModuleDestroy } from '@nestjs/common';
-import * as Imap from 'imap';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import * as Imap from 'imap';
+import { ImapClientAbstract } from './imap.client.abstract';
 
 @Injectable()
-export class ImapClient implements OnModuleDestroy {
+export class ImapClient extends ImapClientAbstract {
   private imap: Imap;
 
   constructor(private configService: ConfigService) {
+    super();
     this.imap = new Imap({
       user: this.configService.get<string>('IMAP_USER'),
       password: this.configService.get<string>('IMAP_PASSWORD'),

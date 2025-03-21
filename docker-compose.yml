@@ -6,15 +6,29 @@ services:
       context: ./mock-services
       dockerfile: Dockerfile
     ports:
-      - "1143:1143"
+      - "${MOCK_SERVICES_PORT:-3001}:3001"
+    environment:
+      - MOCKSERVER_PORT=3001
+      - NODE_ENV=development
+      - IMAP_HOST=mock-services
+      - IMAP_PORT=1143
+      - IMAP_USER=test@example.com
+      - IMAP_PASSWORD=test123
+      - IMAP_TLS=false
+      - EMAIL_FROM=${EMAIL_FROM}
+      - EMAIL_SUBJECT=${EMAIL_SUBJECT}
+    volumes:
+      - ./mock-services:/app
+      - /app/node_modules
 
   server:
     build:
       context: ./server
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "${SERVER_PORT:-3000}:3000"
     environment:
+      - SERVER_PORT=3000
       - NODE_ENV=development
       - IMAP_HOST=mock-services
       - IMAP_PORT=1143

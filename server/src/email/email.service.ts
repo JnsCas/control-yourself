@@ -1,13 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ImapClient } from '../imap/imap.client';
+import { ImapClient } from './imap/imap.client';
 import { EmailParserService } from './email-parser.service';
-
+import { ImapClientAbstract } from './imap/imap.client.abstract';
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
 
   constructor(
-    private readonly imapClient: ImapClient,
+    private readonly imapClient: ImapClientAbstract,
     private readonly emailParser: EmailParserService,
   ) {}
 
