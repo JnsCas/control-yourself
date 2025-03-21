@@ -1,9 +1,12 @@
-import { Controller, Post, Get, Body } from '@nestjs/common';
+import { Controller, Post, Get } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 
+const logger = new Logger('ImapController');
 @Controller('imap')
 export class ImapController {
   @Get('emails/unread')
   async getUnreadEmails() {
+    logger.log('Retrieving unread emails...');
     return {
       emails: [
         {
@@ -19,11 +22,13 @@ export class ImapController {
 
   @Post('connect')
   async connect() {
+    logger.log('Connecting to IMAP server...');
     return { status: 'connected' };
   }
 
   @Post('disconnect')
   async disconnect() {
+    logger.log('Disconnecting from IMAP server...');
     return { status: 'disconnected' };
   }
 } 

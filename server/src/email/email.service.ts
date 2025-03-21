@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ImapClient } from './imap/imap.client';
 import { EmailParserService } from './email-parser.service';
-import { ImapClientAbstract } from './imap/imap.client.abstract';
+import { ImapClientAbstract } from '../imap/imap.client.abstract';
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
