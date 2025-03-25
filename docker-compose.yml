@@ -1,6 +1,13 @@
 version: '3.8'
 
 services:
+  mongodb:
+    image: mongo:4.4
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./tmp/mongodb_data:/data/db
+
   mock-services:
     platform: linux/amd64
     build:
@@ -44,6 +51,7 @@ services:
       - EMAIL_FROM=${EMAIL_FROM}
       - EMAIL_SUBJECT=${EMAIL_SUBJECT}
       - MOCKSERVER_PORT=3001
+      - MONGODB_URI=mongodb://mongodb:27017/control-yourself
     ports:
       - "${SERVER_PORT:-3000}:3000"
       - '1339:1339'
@@ -51,6 +59,7 @@ services:
       - ./server:/app/server
     depends_on:
       - mock-services
+      - mongodb
 
   bot:
     build:
@@ -64,4 +73,4 @@ services:
     volumes:
       - ./bot:/app
     depends_on:
-      - server 
+      - server
