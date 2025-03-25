@@ -27,4 +27,21 @@ export class ApiClient {
     const response = await this.httpClient.get(`/users/${telegramId}`);
     return response.data;
   }
+
+  async createExpense(expenseData: {
+    userId: string;
+    amount: number;
+    merchant: string;
+    date: Date;
+    type: 'MANUAL' | 'AUTO';
+    source?: 'GMAIL';
+  }) {
+    const response = await this.httpClient.post('/expenses', expenseData);
+    return response.data;
+  }
+
+  async getExpensesByMonth(userId: string, year: number, month: number) {
+    const response = await this.httpClient.get(`/expenses/${userId}/${year}/${month}`);
+    return response.data;
+  }
 }

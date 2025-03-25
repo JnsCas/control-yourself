@@ -35,4 +35,8 @@ export class UsersService {
       { new: true }
     );
   }
+
+  async getUsersWithAutoExpense(): Promise<User[]> {
+    return this.userModel.find({ autoExpenseEnabled: true });
+  }
 } 
