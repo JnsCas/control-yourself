@@ -1,7 +1,7 @@
-import { Telegraf, session } from 'telegraf';
 import * as dotenv from 'dotenv';
-import { startCommand, helpCommand, testCommand } from './commands';
-import { addExpenseCommand, handleExpenseAmount, handleExpenseMerchant, handleExpenseDate } from './commands/add-expense';
+import { Telegraf, session } from 'telegraf';
+import { helpCommand, startCommand, testCommand } from './commands';
+import { newExpenseCommand, handleAmountSelection, handleDateSelection, handleMerchantSelection, handleCustomAmount, handleCustomMerchant, handleCustomDate } from './commands/new-expense';
 
 dotenv.config();
 
@@ -18,22 +18,29 @@ bot.use(session());
 bot.command('start', startCommand);
 bot.command('help', helpCommand);
 bot.command('test', testCommand);
-bot.command('new', addExpenseCommand);
+bot.command('new', newExpenseCommand);
 
-// Handle expense creation flow
+// Callback queries for inline keyboards
+bot.action(/^amount_/, handleAmountSelection);
+bot.action(/^merchant_/, handleMerchantSelection);
+bot.action(/^date_/, handleDateSelection);
+
+// Handle custom amount input
 bot.hears(/^\d+(\.\d{1,2})?$/, async (ctx: any) => {
   if (!ctx.from) return;
   if (ctx.session?.expenseState === 'amount') {
-    await handleExpenseAmount(ctx);
+    await handleCustomAmount(ctx);
   }
 });
 
+// Handle custom merchant and date input
 bot.hears(/^.+$/, async (ctx: any) => {
   if (!ctx.from) return;
+  
   if (ctx.session?.expenseState === 'merchant') {
-    await handleExpenseMerchant(ctx);
+    await handleCustomMerchant(ctx);
   } else if (ctx.session?.expenseState === 'date') {
-    await handleExpenseDate(ctx);
+    await handleCustomDate(ctx);
   }
 });
 
