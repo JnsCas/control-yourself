@@ -1,61 +1,49 @@
-import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { Expense, ExpenseDocument, ExpenseType, ExpenseSource } from './schemas/expense.schema';
+import { Injectable, Logger } from '@nestjs/common';
+import { Expense } from './entities/expense.entity';
+import { CreateExpenseDto } from './types/expense.types';
+import { ExpenseRepository } from './repositories/expense.repository';
 
 @Injectable()
 export class ExpensesService {
+  private readonly logger = new Logger(ExpensesService.name);
+
   constructor(
-    @InjectModel(Expense.name) private expenseModel: Model<ExpenseDocument>
+    private readonly expenseRepository: ExpenseRepository
   ) {}
 
-  async createExpense(expenseData: {
-    userId: string;
-    amount: number;
-    merchant: string;
-    date: Date;
-    type: ExpenseType;
-    source?: ExpenseSource;
-  }): Promise<Expense> {
-    const expense = new this.expenseModel(expenseData);
-    return expense.save();
+  async create(createExpenseDto: CreateExpenseDto): Promise<Expense> {
+    this.logger.debug('Creating expense with data:', createExpenseDto);
+    try {
+      const savedExpense = await this.expenseRepository.create(Expense.create(createExpenseDto));
+      this.logger.debug('Expense saved successfully:', { id: savedExpense.id });
+      return savedExpense;
+    } catch (error) {
+      this.logger.error(`Failed to create expense: ${error.message}`, error.stack);
+      throw error;
+    }
   }
 
-  async getExpensesByMonth(userId: string, year: number, month: number): Promise<Expense[]> {
-    const startDate = new Date(year, month - 1, 1);
-    const endDate = new Date(year, month, 0);
-    
-    return this.expenseModel.find({
-      userId,
-      date: {
-        $gte: startDate,
-        $lte: endDate
-      }
-    }).sort({ date: -1 });
+  async getExpensesByMonth(userId: string, month: number, year: number): Promise<Expense[]> {
+    this.logger.debug(`Finding expenses for user ${userId} in ${month}/${year}`);
+    try {
+      const startDate = new Date(year, month - 1, 1);
+      const endDate = new Date(year, month, 0);
+      
+      this.logger.debug(`Date range: ${startDate.toISOString()} to ${endDate.toISOString()}`);
+
+      const expenses = await this.expenseRepository.findByMonth(userId, startDate, endDate);
+      this.logger.debug(`Found ${expenses.length} expenses`);
+      return expenses;
+    } catch (error) {
+      this.logger.error(`Failed to fetch expenses: ${error.message}`, error.stack);
+      throw error;
+    }
   }
 
   async getTotalExpensesByMonth(userId: string, year: number, month: number): Promise<number> {
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0);
     
-    const result = await this.expenseModel.aggregate([
-      {
-        $match: {
-          userId,
-          date: {
-            $gte: startDate,
-            $lte: endDate
-          }
-        }
-      },
-      {
-        $group: {
-          _id: null,
-          total: { $sum: '$amount' }
-        }
-      }
-    ]);
-
-    return result[0]?.total || 0;
+    return this.expenseRepository.getTotalByMonth(userId, startDate, endDate);
   }
 } 

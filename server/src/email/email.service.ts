@@ -3,7 +3,7 @@ import { EmailParserService } from './email-parser.service';
 import { GmailService } from '../gmail/gmail.service';
 import { ExpensesService } from '../expenses/expenses.service';
 import { UsersService } from '../users/users.service';
-import { ExpenseType, ExpenseSource } from '../expenses/schemas/expense.schema';
+import { ExpenseSource, ExpenseType } from "src/expenses/types/expense.types";
 
 @Injectable()
 export class EmailService {
@@ -36,7 +36,7 @@ export class EmailService {
             const transaction = this.emailParser.parseEmailContent(email.body);
             
             // Store the expense
-            await this.expensesService.createExpense({
+            await this.expensesService.create({
               userId: user.telegramId,
               amount: transaction.amount,
               merchant: transaction.merchant,
