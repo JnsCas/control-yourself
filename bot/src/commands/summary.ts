@@ -1,11 +1,18 @@
 import { Markup } from 'telegraf';
 import { ApiClient } from '../api/api.client';
+import logger from '../utils/logger';
 
 export const summaryCommand = async (ctx: any) => {
   if (!ctx.from) {
+    logger.error('Summary command called without user context');
     await ctx.reply('Error: Could not identify user');
     return;
   }
+
+  logger.info('Summary command received', {
+    userId: ctx.from.id,
+    username: ctx.from.username
+  });
 
   ctx.session = {};
 
@@ -22,24 +29,33 @@ export const summaryCommand = async (ctx: any) => {
     'Select a month to view expenses summary:',
     keyboard
   );
+  logger.info('Sent month selection keyboard', { userId: ctx.from.id });
 };
 
 export const handleSummarySelection = async (ctx: any) => {
-  if (!ctx.from) return;
+  if (!ctx.from) {
+    logger.error('Summary selection handler called without user context');
+    return;
+  }
 
   // Answer the callback query to remove the loading message
   await ctx.answerCbQuery();
 
   const selection = ctx.callbackQuery.data.replace('summary_', '');
+  logger.info('Summary selection received', {
+    userId: ctx.from.id,
+    selection
+  });
 
-  let date = new Date();
+  let date: Date;
+  const now = new Date();
+  
   switch (selection) {
     case 'current':
-      // Keep current month
+      date = now;
       break;
     case 'last':
-      // Set to last month
-      date.setMonth(date.getMonth() - 1);
+      date = new Date(now.getFullYear(), now.getMonth() - 1, 1);
       break;
     case 'custom':
       ctx.session.summaryState = 'awaiting_month';
@@ -47,25 +63,52 @@ export const handleSummarySelection = async (ctx: any) => {
         'Please enter month and year (MM-YYYY):',
         Markup.forceReply()
       );
+      logger.info('Requested custom month input', { userId: ctx.from.id });
       return;
     default:
+      logger.warn('Invalid summary selection received', {
+        userId: ctx.from.id,
+        selection
+      });
       await ctx.reply('Invalid selection');
       return;
   }
+
+  logger.info('Selected date for summary', {
+    userId: ctx.from.id,
+    selection,
+    date: date.toISOString(),
+    year: date.getFullYear(),
+    month: date.getMonth() + 1,
+    day: date.getDate()
+  });
 
   await showSummary(ctx, date);
 };
 
 export const handleCustomMonth = async (ctx: any) => {
   if (!ctx.from || !ctx.message || !('text' in ctx.message)) {
+    logger.error('Custom month handler called with invalid context', {
+      userId: ctx.from?.id,
+      hasMessage: !!ctx.message,
+      hasText: ctx.message && 'text' in ctx.message
+    });
     await ctx.reply('Error: Invalid input');
     return;
   }
 
   // Parse MM-YYYY format
   const [month, year] = ctx.message.text.split('-').map(Number);
+  logger.info('Custom month received', {
+    userId: ctx.from.id,
+    monthYear: ctx.message.text
+  });
   
   if (isNaN(month) || isNaN(year) || month < 1 || month > 12) {
+    logger.warn('Invalid month format received', {
+      userId: ctx.from.id,
+      monthYear: ctx.message.text
+    });
     await ctx.reply('Please enter a valid month and year (MM-YYYY):', Markup.forceReply());
     return;
   }
@@ -75,11 +118,32 @@ export const handleCustomMonth = async (ctx: any) => {
 };
 
 async function showSummary(ctx: any, date: Date) {
+  if (!ctx.from) {
+    logger.error('Show summary called without user context');
+    return;
+  }
+
   try {
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    
+    logger.info('Fetching expenses for summary', {
+      userId: ctx.from.id,
+      year,
+      month,
+      dateString: date.toISOString()
+    });
+
     const apiClient = new ApiClient();
-    const expenses = await apiClient.getExpensesByMonth(ctx.from.id.toString(), date.getFullYear(), date.getMonth() + 1);
+    const expenses = await apiClient.getExpensesByMonth(ctx.from.id.toString(), year, month);
 
     if (!expenses || expenses.length === 0) {
+      logger.info('No expenses found for period', {
+        userId: ctx.from.id,
+        year,
+        month,
+        dateString: date.toISOString()
+      });
       await ctx.reply(`No expenses found for ${date.toLocaleString('default', { month: 'long', year: 'numeric' })}`);
       return;
     }
@@ -106,11 +170,27 @@ async function showSummary(ctx: any, date: Date) {
       });
 
     await ctx.reply(message);
+    logger.info('Successfully sent expense summary', {
+      userId: ctx.from.id,
+      year,
+      month,
+      dateString: date.toISOString(),
+      totalExpenses: expenses.length,
+      totalAmount: total,
+      merchantCount: Object.keys(byMerchant).length
+    });
   } catch (error) {
-    console.error('Error fetching expenses:', error);
+    logger.error('Error fetching expenses for summary', {
+      userId: ctx.from.id,
+      year: date.getFullYear(),
+      month: date.getMonth() + 1,
+      dateString: date.toISOString(),
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
     await ctx.reply('Sorry, there was an error fetching your expenses. Please try again later.');
   } finally {
     // Clear session state
     ctx.session.summaryState = undefined;
+    logger.info('Summary session cleared', { userId: ctx.from.id });
   }
 } 
