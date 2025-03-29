@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { EmailParserService } from './email-parser.service';
+import { GmailService } from '../gmail/gmail.service';
 import { ExpensesService } from '../expenses/expenses.service';
+import { UsersService } from '../users/users.service';
 import { ExpenseSource, ExpenseType } from "src/expenses/types/expense.types";
 
 @Injectable()
@@ -8,6 +10,7 @@ export class EmailService {
   private readonly logger = new Logger(EmailService.name);
 
   constructor(
+    private readonly gmailService: GmailService,
     private readonly emailParser: EmailParserService,
     private readonly expensesService: ExpensesService,
     private readonly usersService: UsersService,

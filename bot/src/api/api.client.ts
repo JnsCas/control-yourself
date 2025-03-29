@@ -40,8 +40,8 @@ export class ApiClient {
     return response.data;
   }
 
-  async getExpensesByMonth(userId: string, month: number, year: number) {
-    const response = await this.httpClient.get(`/expenses?userId=${userId}&month=${month}&year=${year}`);
+  async getExpensesByMonth(userId: string, year: number, month: number) {
+    const response = await this.httpClient.get(`/expenses/${userId}/${year}/${month}`);
     return response.data;
   }
 }

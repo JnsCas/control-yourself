@@ -12,4 +12,4 @@ dist/
 # OS
 .DS_Store
 
-tmp/*
+tmp/
