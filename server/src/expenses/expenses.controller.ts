@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Logger, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Param, Post, Query } from '@nestjs/common';
 import { ExpensesService } from './expenses.service';
 import { CreateExpenseDto } from "src/expenses/types/expense.types";
 
@@ -21,11 +21,11 @@ export class ExpensesController {
     }
   }
 
-  @Get()
+  @Get(':userId/:year/:month')
   async getExpensesByMonth(
-    @Query('userId') userId: string,
-    @Query('month') month: number,
-    @Query('year') year: number,
+    @Param('userId') userId: string,
+    @Param('year') year: number,
+    @Param('month') month: number
   ) {
     this.logger.log(`Fetching expenses for user ${userId} - Month: ${month}, Year: ${year}`);
     try {

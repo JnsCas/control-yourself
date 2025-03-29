@@ -77,7 +77,7 @@ export const handleCustomMonth = async (ctx: any) => {
 async function showSummary(ctx: any, date: Date) {
   try {
     const apiClient = new ApiClient();
-    const expenses = await apiClient.getExpensesByMonth(ctx.from.id.toString(), date.getMonth() + 1, date.getFullYear());
+    const expenses = await apiClient.getExpensesByMonth(ctx.from.id.toString(), date.getFullYear(), date.getMonth() + 1);
 
     if (!expenses || expenses.length === 0) {
       await ctx.reply(`No expenses found for ${date.toLocaleString('default', { month: 'long', year: 'numeric' })}`);
