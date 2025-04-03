@@ -1,6 +1,6 @@
 import { CreateExpenseDto, ExpenseSource, ExpenseType } from '../types/expense.types';
 import { ExpenseDocument } from '../schemas/expense.schema';
-import { MongoIdManager } from "src/mongo/MongoIdManager";
+import { MongoIdManager } from "src/application/mongo/MongoIdManager";
 
 export class Expense {
   constructor(
