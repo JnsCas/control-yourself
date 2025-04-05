@@ -1,6 +1,6 @@
 import * as dotenv from 'dotenv';
 import { Telegraf, session } from 'telegraf';
-import { helpCommand, startCommand, testCommand } from './commands';
+import { authCommand, helpCommand, startCommand, testCommand } from './commands';
 import { newExpenseCommand, handleAmountSelection, handleDateSelection, handleMerchantSelection, handleCustomAmount, handleCustomMerchant, handleCustomDate } from './commands/new-expense';
 import { summaryCommand, handleSummarySelection, handleCustomMonth } from './commands/summary';
 import logger from './utils/logger';
@@ -28,6 +28,7 @@ bot.command('help', helpCommand);
 bot.command('test', testCommand);
 bot.command('new', newExpenseCommand);
 bot.command('summary', summaryCommand);
+bot.command('auth', authCommand);
 logger.info('All commands registered');
 
 // Callback queries for inline keyboards

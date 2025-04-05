@@ -12,6 +12,21 @@ export class ApiClient {
     logger.info('API Client initialized', { baseURL: process.env.API_URL });
   }
 
+  async getAuthUrl(telegramId: string) {
+    logger.info('Getting auth URL', { telegramId });
+    try {
+      const response = await this.httpClient.get(`/auth/login?telegramId=${telegramId}`, {
+        maxRedirects: 0,
+        validateStatus: (status) => status === 302
+      });
+      logger.info('Successfully got auth URL');
+      return response.headers.location;
+    } catch (error) {
+      logger.error('Failed to get auth URL', { error });
+      throw error;
+    }
+  }
+
   async processNewEmails() {
     logger.info('Processing new emails');
     try {

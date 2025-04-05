@@ -1,28 +1,45 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, Res } from '@nestjs/common';
 import { OAuth2Client } from 'google-auth-library';
 import { GmailService } from '../gmail/gmail.service';
+import { Response } from 'express';
+import { UsersService } from '../users/users.service';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly gmailService: GmailService,
+    private readonly oAuth2Client: OAuth2Client,
+    private readonly usersService: UsersService
   ) {}
 
-  @Get('callback')
-  async handleGoogleCallback(@Query('code') code: string) {
-    const oauth2Client = new OAuth2Client(
-      process.env.GOOGLE_CLIENT_ID,
-      process.env.GOOGLE_CLIENT_SECRET,
-      process.env.GOOGLE_REDIRECT_URI
-    );
+  @Get('login')
+  async login(@Query('telegramId') telegramId: string, @Res() res: Response) {
+    const authUrl = this.oAuth2Client.generateAuthUrl({
+      access_type: 'offline',
+      scope: [
+        'https://www.googleapis.com/auth/gmail.readonly'
+      ],
+      prompt: 'consent',
+      state: telegramId
+    });
 
-    const { tokens } = await oauth2Client.getToken(code);
-    
-    // Here you should store tokens.access_token and tokens.refresh_token
-    // associated with the user's Telegram ID
-    
-    // Test fetching emails
-    const emails = await this.gmailService.fetchEmails(tokens.access_token);
+    res.redirect(authUrl);
+  }
+
+  @Get('callback')
+  async handleGoogleCallback(@Query('code') code: string, @Query('state') telegramId: string) {
+    const { tokens } = await this.oAuth2Client.getToken(code);
+
+    const user = await this.usersService.getUserByTelegramId(telegramId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    // Store tokens for the user
+    await this.usersService.updateUser(telegramId, {
+      googleAccessToken: tokens.access_token,
+      googleRefreshToken: tokens.refresh_token
+    });
     
     return 'Authentication successful! You can return to the bot.';
   }

@@ -17,6 +17,6 @@ export class UsersController {
 
   @Get(':telegramId')
   async getUser(@Param('telegramId') telegramId: string) {
-    return this.usersService.getUser(telegramId);
+    return this.usersService.getUserByTelegramId(telegramId);
   }
 } 

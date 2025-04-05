@@ -24,8 +24,12 @@ export class UsersService {
     return user.save();
   }
 
-  async getUser(telegramId: string): Promise<User | null> {
+  async getUserByTelegramId(telegramId: string): Promise<User | null> {
     return this.userModel.findOne({ telegramId });
+  }
+
+  async getUserById(id: string): Promise<User | null> {
+    return this.userModel.findById(id);
   }
 
   async updateUser(telegramId: string, updateData: Partial<User>): Promise<User | null> {
@@ -36,7 +40,21 @@ export class UsersService {
     );
   }
 
+  async updateUserById(id: string, updateData: Partial<User>): Promise<User | null> {
+    return this.userModel.findByIdAndUpdate(
+      id,
+      { $set: updateData },
+      { new: true }
+    );
+  }
+
   async getUsersWithAutoExpense(): Promise<User[]> {
     return this.userModel.find({ autoExpenseEnabled: true });
+  }
+
+  async getUsersWithGoogleTokens(): Promise<User[]> {
+    return this.userModel.find({
+      googleAccessToken: { $exists: true, $ne: null }
+    });
   }
 } 

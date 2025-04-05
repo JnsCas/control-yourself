@@ -16,21 +16,41 @@ export class GmailClientDev extends GmailClientAbstract {
     const port = this.configService.get("MOCKSERVER_PORT");
     this.client = axios.create({ baseURL: `${host}:${port}/imap` });
   }
-
-  getMessage(accessToken: string, messageId: string): Promise<any> {
-    throw new Error("Method not implemented.");
-  }
   
-  listMessages(accessToken: string, query: string): Promise<any> {
-    throw new Error("Method not implemented.");
-  }
-  
-  async fetchEmails(accessToken: string): Promise<any[]> {
+  async fetchEmails(accessToken: string, userId: string): Promise<any[]> {
     logger.log("IMAP Client Dev fetching unread emails");
     const { status, data } = await this.client.get("/emails/unread");
     if (status !== 200) {
       throw new Error("Failed to fetch unread emails from IMAP Client Dev");
     }
     return data;
+  }
+
+  async fetchMessage(accessToken: string, userId: string, messageId: string): Promise<any> {
+    logger.log(`IMAP Client Dev fetching message ${messageId}`);
+    // In development, we'll return a mock message structure that matches Gmail's format
+    return {
+      id: messageId,
+      threadId: `thread_${messageId}`,
+      labelIds: ['UNREAD', 'INBOX'],
+      snippet: 'Transaction Alert: A purchase has been made...',
+      payload: {
+        mimeType: 'multipart/alternative',
+        headers: [
+          { name: 'From', value: process.env.EMAIL_FROM || 'visa@notifications.visa.com' },
+          { name: 'Subject', value: process.env.EMAIL_SUBJECT || 'Transaction Alert' },
+          { name: 'Date', value: new Date().toISOString() }
+        ],
+        parts: [
+          {
+            mimeType: 'text/plain',
+            body: {
+              data: Buffer.from('Amount: 50.00\nMerchant: Test Store\nDate: 2024-03-20').toString('base64')
+            }
+          }
+        ]
+      },
+      internalDate: Date.now().toString()
+    };
   }
 }
