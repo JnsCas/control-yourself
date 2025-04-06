@@ -1,9 +1,13 @@
-import { Controller, Post, Body, Get, Param } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, NotFoundException } from '@nestjs/common';
 import { UsersService } from './users.service';
+import { GmailService } from '../gmail/gmail.service';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly gmailService: GmailService
+  ) {}
 
   @Post()
   async createUser(
@@ -18,5 +22,17 @@ export class UsersController {
   @Get(':telegramId')
   async getUser(@Param('telegramId') telegramId: string) {
     return this.usersService.getUserByTelegramId(telegramId);
+  }
+
+  @Post(':userId/sync-emails')
+  async syncEmails(@Param('userId') userId: string) {
+    const user = await this.usersService.getUserById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    await this.usersService.processEmails(user);
+
+    return { message: 'Emails synced successfully' };
   }
 } 

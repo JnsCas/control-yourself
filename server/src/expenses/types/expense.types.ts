@@ -1,3 +1,8 @@
+export enum ExpenseCurrency {
+  ARS = 'ARS',
+  USD = 'USD',
+}
+
 export enum ExpenseType {
   AUTO = 'AUTO',
   MANUAL = 'MANUAL',
@@ -6,6 +11,7 @@ export enum ExpenseType {
 export enum ExpenseSource {
   GMAIL = 'gmail',
   WEB = 'website',
+  TELEGRAM = 'telegram',
 }
 
 export interface CreateExpenseDto {
@@ -15,4 +21,7 @@ export interface CreateExpenseDto {
   date: Date;
   type: ExpenseType;
   source: ExpenseSource;
+  currency: ExpenseCurrency;
+  cardNumber?: string;
+  emailId?: string;
 }

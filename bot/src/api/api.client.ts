@@ -9,7 +9,6 @@ export class ApiClient {
     this.httpClient = axios.create({
       baseURL: process.env.API_URL,
     });
-    logger.info('API Client initialized', { baseURL: process.env.API_URL });
   }
 
   async getAuthUrl(telegramId: string) {
@@ -23,18 +22,6 @@ export class ApiClient {
       return response.headers.location;
     } catch (error) {
       logger.error('Failed to get auth URL', { error });
-      throw error;
-    }
-  }
-
-  async processNewEmails() {
-    logger.info('Processing new emails');
-    try {
-      const response = await this.httpClient.get('/emails/process');
-      logger.info('Successfully processed new emails');
-      return response.data;
-    } catch (error) {
-      logger.error('Failed to process new emails', { error });
       throw error;
     }
   }
@@ -54,7 +41,7 @@ export class ApiClient {
     }
   }
 
-  async getUser(telegramId: string) {
+  async getUserByTelegramId(telegramId: string) {
     logger.info('Fetching user', { telegramId });
     try {
       const response = await this.httpClient.get(`/users/${telegramId}`);
@@ -104,6 +91,18 @@ export class ApiClient {
       return response.data;
     } catch (error) {
       logger.error('Failed to fetch expenses', { userId, year, month, error });
+      throw error;
+    }
+  }
+
+  async syncEmails(userId: string) {
+    logger.info('Syncing emails', { userId });
+    try {
+      const response = await this.httpClient.post(`/users/${userId}/sync-emails`);
+      logger.info('Successfully synced emails', { userId });
+      return response.data;
+    } catch (error) {
+      logger.error('Failed to sync emails', { userId, error });
       throw error;
     }
   }

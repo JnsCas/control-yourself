@@ -2,6 +2,8 @@ import { Markup } from 'telegraf';
 import { ApiClient } from '../api/api.client';
 import logger from '../utils/logger';
 
+const FIVE_MINUTES = 5 * 60 * 1000; // 5 minutes
+
 export const summaryCommand = async (ctx: any) => {
   if (!ctx.from) {
     logger.error('Summary command called without user context');
@@ -123,23 +125,34 @@ async function showSummary(ctx: any, date: Date) {
     return;
   }
 
+  const telegramId = ctx.from.id.toString();
+
   try {
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
     
     logger.info('Fetching expenses for summary', {
-      userId: ctx.from.id,
+      telegramId,
       year,
       month,
       dateString: date.toISOString()
     });
 
     const apiClient = new ApiClient();
-    const expenses = await apiClient.getExpensesByMonth(ctx.from.id.toString(), year, month);
+    
+    const user = await apiClient.getUserByTelegramId(telegramId);
+    if (!user) {
+      logger.error('User not found', { telegramId });
+      await ctx.reply('Error: User not found');
+      return;
+    }
+
+    await apiClient.syncEmails(user._id);
+    const expenses = await apiClient.getExpensesByMonth(user._id, year, month);
 
     if (!expenses || expenses.length === 0) {
       logger.info('No expenses found for period', {
-        userId: ctx.from.id,
+        telegramId,
         year,
         month,
         dateString: date.toISOString()

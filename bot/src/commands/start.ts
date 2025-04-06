@@ -18,7 +18,7 @@ export const startCommand = async (ctx: Context) => {
   const apiClient = new ApiClient();
   
   try {
-    // Create or get user
+    // Create or get user FIXME
     await apiClient.createUser(
       ctx.from.id.toString(),
       ctx.from.username || ctx.from.first_name

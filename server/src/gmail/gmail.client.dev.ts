@@ -2,7 +2,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import { GmailClientAbstract } from "./gmail.client.abstract";
 import { ConfigService } from "@nestjs/config";
 import axios, { AxiosInstance } from "axios";
-
+import { User } from "src/users/schemas/user.schema";
 const logger = new Logger('GmailClientDev');
 
 @Injectable()
@@ -17,7 +17,7 @@ export class GmailClientDev extends GmailClientAbstract {
     this.client = axios.create({ baseURL: `${host}:${port}/imap` });
   }
   
-  async fetchEmails(accessToken: string, userId: string): Promise<any[]> {
+  async fetchEmailsIds(user: User): Promise<any[]> {
     logger.log("IMAP Client Dev fetching unread emails");
     const { status, data } = await this.client.get("/emails/unread");
     if (status !== 200) {
@@ -26,7 +26,7 @@ export class GmailClientDev extends GmailClientAbstract {
     return data;
   }
 
-  async fetchMessage(accessToken: string, userId: string, messageId: string): Promise<any> {
+  async fetchMessage(user: User, messageId: string): Promise<any> {
     logger.log(`IMAP Client Dev fetching message ${messageId}`);
     // In development, we'll return a mock message structure that matches Gmail's format
     return {
