@@ -1,9 +1,8 @@
-import { OnModuleDestroy } from "@nestjs/common";
+import { User } from "src/users/entities/user.entity";
 
 export abstract class GmailClientAbstract {
 
-  abstract fetchEmails(accessToken: string): Promise<any[]>;
-  abstract getMessage(accessToken: string, messageId: string): Promise<any>;
-  abstract listMessages(accessToken: string, query: string): Promise<any>;
+  abstract fetchEmailsIds(user: User, sinceDate?: Date): Promise<any[]>;
+  abstract fetchMessage(user: User, messageId: string): Promise<any>;
   
 }

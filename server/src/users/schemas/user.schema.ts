@@ -3,10 +3,10 @@ import { Document } from 'mongoose';
 
 export type UserDocument = User & Document;
 
-@Schema({ timestamps: true })
+@Schema()
 export class User {
-  @Prop({ required: true, unique: true })
-  telegramId: string;
+  @Prop()
+  telegramId?: string;
 
   @Prop({ required: true })
   username: string;
@@ -19,6 +19,9 @@ export class User {
 
   @Prop({ default: false })
   autoExpenseEnabled: boolean;
+
+  @Prop()
+  lastEmailSync?: Date;
 
   @Prop({ default: Date.now })
   createdAt: Date;

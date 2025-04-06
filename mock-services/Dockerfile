@@ -1,4 +1,4 @@
-FROM node:20-alpine as builder
+FROM node:22-alpine as builder
 
 ARG MOCKSERVER_PORT
 RUN test -n "${MOCKSERVER_PORT}" || (echo "PORT not set" && false)
@@ -23,7 +23,7 @@ RUN npx tsc
 RUN npm prune --omit=dev
 
 # Run stage
-FROM node:20-alpine
+FROM node:22-alpine
 
 ENV NODE_ENV=production
 

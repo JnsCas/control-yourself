@@ -1,50 +1,35 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { GmailClientAbstract } from './gmail.client.abstract';
+import { GetMessageResponse } from './responses/get-message.response';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class GmailService {
-  constructor(private readonly gmailClient: GmailClientAbstract) {}
+  private readonly logger = new Logger(GmailService.name);
 
-  async fetchEmails(accessToken: string) {
-    const query = `from:${process.env.EMAIL_FROM} subject:${process.env.EMAIL_SUBJECT} is:unread`;
-    const response = await this.gmailClient.listMessages(accessToken, query);
+  constructor(
+    private readonly gmailClient: GmailClientAbstract
+  ) {}
 
-    const emails = [];
-    for (const message of response.data.messages || []) {
-      const email = await this.gmailClient.getMessage(accessToken, message.id);
-      emails.push(this.parseEmailData(email.data));
-    }
+  /**
+   * Fetches new emails ids since the last sync date
+   * @param user 
+   * @returns 
+   */
+  async fetchNewEmailsIds(user: User): Promise<string[]> {
+    const userId = user.id; 
+    const lastSync = user.lastEmailSync;
+    this.logger.log(`Fetching emails for userId ${userId} since ${lastSync?.toISOString() || 'all time'}`);
 
-    return emails;
+    const messageList = await this.gmailClient.fetchEmailsIds(user, lastSync);
+    this.logger.log(`Retrieved ${messageList?.length || 0} message IDs for userId ${userId} and since ${lastSync?.toISOString() || 'all time'}`);
+    return messageList;
   }
 
-  private parseEmailData(emailData: any) {
-    const headers = emailData.payload.headers;
-    const subject = headers.find(h => h.name === 'Subject').value;
-    const from = headers.find(h => h.name === 'From').value;
-    
-    return {
-      id: emailData.id,
-      subject,
-      from,
-      body: this.parseEmailBody(emailData.payload),
-      date: new Date(parseInt(emailData.internalDate)),
-    };
-  }
-
-  private parseEmailBody(payload: any): string {
-    if (payload.body.data) {
-      return Buffer.from(payload.body.data, 'base64').toString();
-    }
-
-    if (payload.parts) {
-      for (const part of payload.parts) {
-        if (part.mimeType === 'text/plain') {
-          return Buffer.from(part.body.data, 'base64').toString();
-        }
-      }
-    }
-
-    return '';
+  async fetchMessage(user: User, messageId: string): Promise<GetMessageResponse> {
+    this.logger.log(`Fetching message for userId ${user.id} and messageId ${messageId}`);
+    const messageResponse = await this.gmailClient.fetchMessage(user, messageId);
+    this.logger.log(`Successfully fetched message for userId ${user.id} and messageId ${messageId}`);
+    return messageResponse;
   }
 } 

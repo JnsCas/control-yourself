@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
-import { ExpenseSource, ExpenseType } from '../types/expense.types';
+import { ExpenseCurrency, ExpenseSource, ExpenseType } from '../types/expense.types';
 
 @Schema({ timestamps: true })
 class Expense {
@@ -20,13 +20,22 @@ class Expense {
   type: ExpenseType;
 
   @Prop({ enum: ExpenseSource })
-  source?: ExpenseSource;
+  source: ExpenseSource;
 
   @Prop({ default: Date.now })
   createdAt: Date;
 
   @Prop({ default: Date.now })
   updatedAt: Date;
+
+  @Prop({ enum: ExpenseCurrency })
+  currency?: ExpenseCurrency;
+
+  @Prop({ type: MongooseSchema.Types.String })
+  cardNumber?: string;
+
+  @Prop({ type: MongooseSchema.Types.String })
+  emailId?: string;
 }
 
 export type ExpenseDocument = Expense & Document;

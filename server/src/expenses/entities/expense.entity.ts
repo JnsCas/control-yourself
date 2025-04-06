@@ -1,6 +1,6 @@
-import { CreateExpenseDto, ExpenseSource, ExpenseType } from '../types/expense.types';
+import { CreateExpenseDto, ExpenseCurrency, ExpenseSource, ExpenseType } from '../types/expense.types';
 import { ExpenseDocument } from '../schemas/expense.schema';
-import { MongoIdManager } from "src/mongo/MongoIdManager";
+import { MongoIdManager } from "src/application/mongo/MongoIdManager";
 
 export class Expense {
   constructor(
@@ -12,7 +12,10 @@ export class Expense {
     readonly type: ExpenseType,
     readonly createdAt: Date,
     readonly updatedAt: Date,
-    readonly source?: ExpenseSource,
+    readonly source: ExpenseSource,
+    readonly currency?: ExpenseCurrency,
+    readonly cardNumber?: string,
+    readonly emailId?: string,
   ) {}
 
   static create(createExpenseDto: CreateExpenseDto): Expense {
@@ -25,7 +28,10 @@ export class Expense {
       createExpenseDto.type,
       new Date(),
       new Date(),
-      createExpenseDto.source
+      createExpenseDto.source,
+      createExpenseDto.currency,
+      createExpenseDto.cardNumber,
+      createExpenseDto.emailId
     );
   }
 
@@ -39,7 +45,10 @@ export class Expense {
       document.type,
       document.date,
       document.updatedAt,
-      document.source
+      document.source,
+      document.currency,
+      document.cardNumber,
+      document.emailId
     )
   }
 
@@ -53,9 +62,12 @@ export class Expense {
     merchant: string;
     date: Date;
     type: ExpenseType;
-    source?: ExpenseSource;
+    source: ExpenseSource;
     createdAt: Date;
     updatedAt: Date;
+    currency?: ExpenseCurrency;
+    cardNumber?: string;
+    emailId?: string;
   } {
     return {
       userId: this.userId,
@@ -65,7 +77,10 @@ export class Expense {
       type: this.type,
       source: this.source,
       createdAt: this.createdAt,
-      updatedAt: this.updatedAt
+      updatedAt: this.updatedAt,
+      currency: this.currency,
+      cardNumber: this.cardNumber,
+      emailId: this.emailId
     };
   }
 } 

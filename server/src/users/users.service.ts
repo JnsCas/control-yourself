@@ -1,42 +1,75 @@
-import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { User, UserDocument } from './schemas/user.schema';
+import { Injectable, Logger } from '@nestjs/common';
+import { GmailService } from '../gmail/gmail.service';
+import { ExpensesService } from '../expenses/expenses.service';
+import { ParsedEmailTransaction } from 'src/email/email.parser';
+import { ExpenseSource, ExpenseType } from 'src/expenses/types/expense.types';
+import { EmailParser } from 'src/email/email.parser';
+import { UserRepository } from './repositories/user.repository';
+import { User } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
+
   constructor(
-    @InjectModel(User.name) private userModel: Model<UserDocument>
+    private readonly userRepository: UserRepository,
+    private readonly gmailService: GmailService,
+    private readonly expenseService: ExpensesService,
+    private readonly emailParser: EmailParser
   ) {}
 
-  async createUser(telegramId: string, username: string): Promise<User> {
-    const existingUser = await this.userModel.findOne({ telegramId });
-    if (existingUser) {
-      return existingUser;
-    }
-
-    const user = new this.userModel({
-      telegramId,
+  async createUser(username: string, telegramId?: string): Promise<User> {
+    const user = User.create({
       username,
       autoExpenseEnabled: false,
+      telegramId,
     });
 
-    return user.save();
+    return this.userRepository.create(user);
   }
 
-  async getUser(telegramId: string): Promise<User | null> {
-    return this.userModel.findOne({ telegramId });
+  async processEmails(user: User): Promise<void> {
+    const newEmailsIds = await this.gmailService.fetchNewEmailsIds(user);
+    for (const emailId of newEmailsIds) {
+      const messageResponse = await this.gmailService.fetchMessage(user, emailId);
+      const parsedEmail = this.emailParser.parseEmailData(messageResponse);
+      if (!parsedEmail) {
+        this.logger.log(`Skipping non-accepted transaction for email ID: ${emailId}`);
+        continue;
+      }
+      await this.expenseService.create({
+        userId: user.id,
+        amount: parsedEmail.amount,
+        merchant: parsedEmail.merchant,
+        date: parsedEmail.date,
+        type: ExpenseType.AUTO, // FIXME
+        source: ExpenseSource.GMAIL,
+        currency: parsedEmail.currency,
+        cardNumber: parsedEmail.cardNumber,
+        emailId: parsedEmail.id,
+      });
+    }
+    await this.userRepository.updateLastEmailSync(user.id);
+    this.logger.log(`Synced ${newEmailsIds.length} new emails for user ${user.id}`);
   }
 
-  async updateUser(telegramId: string, updateData: Partial<User>): Promise<User | null> {
-    return this.userModel.findOneAndUpdate(
-      { telegramId },
-      { $set: updateData },
-      { new: true }
-    );
+  async getUserByTelegramId(telegramId?: string): Promise<User | null> {
+    return this.userRepository.findOneByTelegramId(telegramId);
+  }
+
+  async getUserByUsername(username: string): Promise<User | null> {
+    return this.userRepository.findOneByUsername(username);
+  }
+
+  async getUserById(id: string): Promise<User | null> {
+    return this.userRepository.findById(id);
+  }
+
+  async updateUser(id: string, updateData: Partial<User>): Promise<User | null> {
+    return this.userRepository.updateById(id, updateData);
   }
 
   async getUsersWithAutoExpense(): Promise<User[]> {
-    return this.userModel.find({ autoExpenseEnabled: true });
+    return this.userRepository.findUsersWithAutoExpense();
   }
 } 

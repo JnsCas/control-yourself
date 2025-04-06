@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { EmailModule } from './email/email.module';
 import { UsersModule } from './users/users.module';
 import { ExpensesModule } from './expenses/expenses.module';
+import { GmailModule } from './gmail/gmail.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -19,9 +21,11 @@ import { ExpensesModule } from './expenses/expenses.module';
       }),
       inject: [ConfigService],
     }),
-    EmailModule,
+    ScheduleModule.forRoot(),
     UsersModule,
     ExpensesModule,
+    GmailModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
