@@ -1,4 +1,4 @@
-import { User } from "src/users/schemas/user.schema";
+import { User } from "src/users/entities/user.entity";
 
 export abstract class GmailClientAbstract {
 

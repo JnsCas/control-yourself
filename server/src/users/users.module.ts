@@ -6,6 +6,8 @@ import { UsersController } from './users.controller';
 import { GmailModule } from 'src/gmail/gmail.module';
 import { ExpensesModule } from 'src/expenses/expenses.module';
 import { EmailModule } from 'src/email/email.module';
+import { UserRepository } from './repositories/user.repository';
+
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
@@ -14,7 +16,7 @@ import { EmailModule } from 'src/email/email.module';
     EmailModule
   ],
   controllers: [UsersController],
-  providers: [UsersService],
+  providers: [UsersService, UserRepository],
   exports: [MongooseModule, UsersService]
 })
 export class UsersModule {} 

@@ -1,14 +1,12 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Schema as MongooseSchema } from 'mongoose';
+import { Document } from 'mongoose';
 
 export type UserDocument = User & Document;
 
-@Schema({ timestamps: true })
+@Schema()
 export class User {
-  _id: MongooseSchema.Types.ObjectId;
-
-  @Prop({ required: true, unique: true })
-  telegramId: string;
+  @Prop()
+  telegramId?: string;
 
   @Prop({ required: true })
   username: string;
@@ -22,11 +20,11 @@ export class User {
   @Prop({ default: false })
   autoExpenseEnabled: boolean;
 
+  @Prop()
+  lastEmailSync?: Date;
+
   @Prop({ default: Date.now })
   createdAt: Date;
-
-  @Prop()
-  lastEmailSync: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User); 

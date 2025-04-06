@@ -3,7 +3,7 @@ import { OAuth2Client } from 'google-auth-library';
 import { google } from 'googleapis';
 import { gmail_v1 } from 'googleapis/build/src/apis/gmail';
 import { GmailClientAbstract } from "src/gmail/gmail.client.abstract";
-import { User } from 'src/users/schemas/user.schema';
+import { User } from 'src/users/entities/user.entity';
 import { GetMessageResponse } from './responses/get-message.response';
 
 @Injectable()

@@ -18,8 +18,13 @@ export const startCommand = async (ctx: Context) => {
   const apiClient = new ApiClient();
   
   try {
-    // Create or get user FIXME
-    await apiClient.createUser(
+    let user = await apiClient.getUserByTelegramId(ctx.from.id.toString());
+    if (user) {
+      await ctx.reply('You are already registered! Use /help to see available commands.');
+      return;
+    }
+
+    user = await apiClient.createUser(
       ctx.from.id.toString(),
       ctx.from.username || ctx.from.first_name
     );
@@ -37,7 +42,7 @@ Use /help to see all available commands.
     `;
 
     await ctx.reply(welcomeMessage);
-    logger.info('Successfully completed start command', { userId: ctx.from.id });
+    logger.info('Successfully completed start command', { userId: ctx.from.id, user });
   } catch (error) {
     logger.error('Error in start command', {
       userId: ctx.from.id,

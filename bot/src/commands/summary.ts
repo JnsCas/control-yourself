@@ -2,8 +2,6 @@ import { Markup } from 'telegraf';
 import { ApiClient } from '../api/api.client';
 import logger from '../utils/logger';
 
-const FIVE_MINUTES = 5 * 60 * 1000; // 5 minutes
-
 export const summaryCommand = async (ctx: any) => {
   if (!ctx.from) {
     logger.error('Summary command called without user context');
@@ -147,8 +145,8 @@ async function showSummary(ctx: any, date: Date) {
       return;
     }
 
-    await apiClient.syncEmails(user._id);
-    const expenses = await apiClient.getExpensesByMonth(user._id, year, month);
+    await apiClient.syncEmails(user.id);
+    const expenses = await apiClient.getExpensesByMonth(user.id, year, month);
 
     if (!expenses || expenses.length === 0) {
       logger.info('No expenses found for period', {
@@ -195,9 +193,9 @@ async function showSummary(ctx: any, date: Date) {
     });
 
     // Create summary message
-    let message = `📊 Expenses Summary for ${date.toLocaleString('default', { month: 'long', year: 'numeric' })}\n\n`;
-    message += `Total: $${total}\n\n`;
-    message += `Breakdown by merchant:\n`;
+    let message = `*📊 Expenses Summary for ${date.toLocaleString('default', { month: 'long', year: 'numeric' })}*\n\n`;
+    message += `*Total:* $${total}\n\n`;
+    message += `*Breakdown by merchant:*\n`;
     
     // Sort prefixes by total amount
     Object.entries(byMerchant)
@@ -211,10 +209,10 @@ async function showSummary(ctx: any, date: Date) {
         if (subItemKeys.length <= 1) {
           const suffix = subItemKeys[0] || '';
           const fullName = suffix ? `${prefix} ${suffix}` : prefix;
-          message += `\n${fullName}: $${totalAmount} (${percentage}%)\n`;
+          message += `\n*${fullName}:* $${totalAmount} (${percentage}%)\n`;
         } else {
           // Show hierarchical structure for multiple sub-items
-          message += `\n${prefix}: $${totalAmount} (${percentage}%)\n`;
+          message += `\n*${prefix}:* $${totalAmount} (${percentage}%)\n`;
           Object.entries(subItems)
             .sort((a, b) => b[1] - a[1])
             .forEach(([suffix, amount]) => {
@@ -226,7 +224,7 @@ async function showSummary(ctx: any, date: Date) {
         }
       });
 
-    await ctx.reply(message);
+    await ctx.reply(message, { parse_mode: 'Markdown' });
     logger.info('Successfully sent expense summary', {
       userId: ctx.from.id,
       year,
