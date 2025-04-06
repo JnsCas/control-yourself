@@ -65,11 +65,7 @@ export class UsersService {
     return this.userRepository.findById(id);
   }
 
-  async updateUser(telegramId: string, updateData: Partial<User>): Promise<User | null> {
-    return this.userRepository.updateByTelegramId(telegramId, updateData);
-  }
-
-  async updateUserById(id: string, updateData: Partial<User>): Promise<User | null> {
+  async updateUser(id: string, updateData: Partial<User>): Promise<User | null> {
     return this.userRepository.updateById(id, updateData);
   }
 

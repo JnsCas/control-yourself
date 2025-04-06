@@ -35,8 +35,7 @@ export class AuthController {
       throw new Error('User not found');
     }
 
-    // Store tokens for the user
-    await this.usersService.updateUser(telegramId, {
+    await this.usersService.updateUser(user.id, {
       googleAccessToken: tokens.access_token,
       googleRefreshToken: tokens.refresh_token
     });
