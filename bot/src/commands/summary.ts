@@ -166,8 +166,32 @@ async function showSummary(ctx: any, date: Date) {
 
     // Group expenses by merchant
     const byMerchant: { [key: string]: number } = {};
+    const merchantDetails: { [key: string]: { [key: string]: number } } = {};
+    
     expenses.forEach((expense: any) => {
-      byMerchant[expense.merchant] = (byMerchant[expense.merchant] || 0) + expense.amount;
+      const merchant = expense.merchant;
+      const amount = expense.amount;
+      
+      // Split merchant name by '*' or space
+      const parts = merchant.split(/[*\s]/);
+      const prefix = parts[0].trim();
+      const suffix = parts.slice(1).join(' ').trim();
+      
+      // Initialize prefix group if it doesn't exist
+      if (!merchantDetails[prefix]) {
+        merchantDetails[prefix] = {};
+      }
+      
+      // Add to total for the prefix
+      byMerchant[prefix] = (byMerchant[prefix] || 0) + amount;
+      
+      // Add to detailed breakdown if there's a suffix
+      if (suffix) {
+        merchantDetails[prefix][suffix] = (merchantDetails[prefix][suffix] || 0) + amount;
+      } else {
+        // If no suffix, just add to the prefix total
+        merchantDetails[prefix][''] = (merchantDetails[prefix][''] || 0) + amount;
+      }
     });
 
     // Create summary message
@@ -175,11 +199,31 @@ async function showSummary(ctx: any, date: Date) {
     message += `Total: $${total}\n\n`;
     message += `Breakdown by merchant:\n`;
     
+    // Sort prefixes by total amount
     Object.entries(byMerchant)
-      .sort((a, b) => b[1] - a[1]) // Sort by amount descending
-      .forEach(([merchant, amount]) => {
-        const percentage = ((amount / total) * 100).toFixed(1);
-        message += `${merchant}: $${amount} (${percentage}%)\n`;
+      .sort((a, b) => b[1] - a[1])
+      .forEach(([prefix, totalAmount]) => {
+        const percentage = ((totalAmount / total) * 100).toFixed(1);
+        const subItems = merchantDetails[prefix];
+        const subItemKeys = Object.keys(subItems).filter(key => key !== '');
+        
+        // If there's only one sub-item or no sub-items, combine them
+        if (subItemKeys.length <= 1) {
+          const suffix = subItemKeys[0] || '';
+          const fullName = suffix ? `${prefix} ${suffix}` : prefix;
+          message += `\n${fullName}: $${totalAmount} (${percentage}%)\n`;
+        } else {
+          // Show hierarchical structure for multiple sub-items
+          message += `\n${prefix}: $${totalAmount} (${percentage}%)\n`;
+          Object.entries(subItems)
+            .sort((a, b) => b[1] - a[1])
+            .forEach(([suffix, amount]) => {
+              if (suffix) { // Only show if there's a suffix
+                const subPercentage = ((amount / totalAmount) * 100).toFixed(1);
+                message += `  └─ ${suffix}: $${amount} (${subPercentage}%)\n`;
+              }
+            });
+        }
       });
 
     await ctx.reply(message);
