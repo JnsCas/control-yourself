@@ -1,6 +1,6 @@
-import { CreateExpenseDto, ExpenseCurrency, ExpenseSource, ExpenseType } from '../types/expense.types';
-import { ExpenseDocument } from '../schemas/expense.schema';
-import { MongoIdManager } from "src/application/mongo/MongoIdManager";
+import { CreateExpenseDto, ExpenseCurrency, ExpenseSource, ExpenseType } from '@jnscas/cy/src/domain/expenses/types/expense.types';
+import { ExpenseDocument } from '@jnscas/cy/src/domain/expenses/schemas/expense.schema';
+import { MongoIdManager } from '@jnscas/cy/src/domain/mongo/MongoIdManager';
 
 export class Expense {
   constructor(

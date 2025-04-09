@@ -1,5 +1,5 @@
-import { MongoIdManager } from 'src/application/mongo/MongoIdManager';
-import { UserDocument } from '../schemas/user.schema';
+import { MongoIdManager } from '@jnscas/cy/src/domain/mongo/MongoIdManager';
+import { UserDocument } from '@jnscas/cy/src/domain/users/schemas/user.schema';
 
 export class User {
   constructor(
