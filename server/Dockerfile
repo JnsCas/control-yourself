@@ -1,4 +1,4 @@
-FROM node:20-alpine
+FROM node:22-alpine
 
 ARG SERVER_PORT
 RUN test -n "${SERVER_PORT}" || (echo "PORT not set" && false)

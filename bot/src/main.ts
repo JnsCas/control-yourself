@@ -1,6 +1,6 @@
 import * as dotenv from 'dotenv';
 import { Telegraf, session } from 'telegraf';
-import { helpCommand, startCommand, testCommand } from './commands';
+import { helpCommand, startCommand, loginCommand } from './commands';
 import { newExpenseCommand, handleAmountSelection, handleDateSelection, handleMerchantSelection, handleCustomAmount, handleCustomMerchant, handleCustomDate } from './commands/new-expense';
 import { summaryCommand, handleSummarySelection, handleCustomMonth } from './commands/summary';
 import logger from './utils/logger';
@@ -25,8 +25,8 @@ logger.info('Session middleware added');
 // Register commands
 bot.command('start', startCommand);
 bot.command('help', helpCommand);
-bot.command('test', testCommand);
 bot.command('new', newExpenseCommand);
+bot.command('login', loginCommand);
 bot.command('summary', summaryCommand);
 logger.info('All commands registered');
 
