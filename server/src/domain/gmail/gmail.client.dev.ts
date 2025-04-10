@@ -1,8 +1,8 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { GmailClientAbstract } from "./gmail.client.abstract";
+import { GmailClientAbstract } from "@jnscas/cy/src/domain/gmail/gmail.client.abstract";
 import { ConfigService } from "@nestjs/config";
 import axios, { AxiosInstance } from "axios";
-import { User } from "src/domain/users/entities/user.entity";
+import { User } from "@jnscas/cy/src/domain/users/entities/user.entity";
 const logger = new Logger('GmailClientDev');
 
 @Injectable()

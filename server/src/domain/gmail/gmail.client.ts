@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { OAuth2Client } from 'google-auth-library';
 import { google } from 'googleapis';
 import { gmail_v1 } from 'googleapis/build/src/apis/gmail';
-import { GmailClientAbstract } from "src/domain/gmail/gmail.client.abstract";
-import { User } from 'src/domain/users/entities/user.entity';
-import { GetMessageResponse } from './responses/get-message.response';
+import { GmailClientAbstract } from "@jnscas/cy/src/domain/gmail/gmail.client.abstract";
+import { User } from '@jnscas/cy/src/domain/users/entities/user.entity';
+import { GetMessageResponse } from '@jnscas/cy/src/domain/gmail/responses/get-message.response';
 
 @Injectable()
 export class GmailClient extends GmailClientAbstract {

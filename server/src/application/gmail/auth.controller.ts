@@ -1,7 +1,7 @@
 import { Controller, Get, Query, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { OAuth2Client } from 'google-auth-library';
-import { UsersService } from '../../domain/users/users.service';
+import { UsersService } from '@jnscas/cy/src/domain/users/users.service';
 
 @Controller('auth')
 export class AuthController {

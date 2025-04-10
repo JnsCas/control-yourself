@@ -1,6 +1,6 @@
 import { Controller, Post, Body, Get, Param, NotFoundException, BadRequestException } from '@nestjs/common';
-import { UsersService } from '../../domain/users/users.service';
-import { GmailService } from '../../domain/gmail/gmail.service';
+import { UsersService } from '@jnscas/cy/src/domain/users/users.service';
+import { GmailService } from '@jnscas/cy/src/domain/gmail/gmail.service';
 import { Logger } from '@nestjs/common';
 
 @Controller('users')

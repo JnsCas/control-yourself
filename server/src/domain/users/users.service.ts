@@ -1,10 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { EmailParser } from 'src/domain/email/email.parser';
-import { ExpenseSource, ExpenseType } from 'src/domain/expenses/types/expense.types';
-import { ExpensesService } from '../expenses/expenses.service';
-import { GmailService } from '../gmail/gmail.service';
-import { User } from './entities/user.entity';
-import { UserRepository } from './repositories/user.repository';
+import { EmailParser } from '@jnscas/cy/src/domain/email/email.parser';
+import { ExpenseSource, ExpenseType } from '@jnscas/cy/src/domain/expenses/types/expense.types';
+import { ExpensesService } from '@jnscas/cy/src/domain/expenses/expenses.service';
+import { GmailService } from '@jnscas/cy/src/domain/gmail/gmail.service';
+import { User } from '@jnscas/cy/src/domain/users/entities/user.entity';
+import { UserRepository } from '@jnscas/cy/src/domain/users/repositories/user.repository';
 
 @Injectable()
 export class UsersService {

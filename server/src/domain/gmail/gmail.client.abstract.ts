@@ -1,4 +1,4 @@
-import { User } from "src/domain/users/entities/user.entity";
+import { User } from "@jnscas/cy/src/domain/users/entities/user.entity";
 
 export abstract class GmailClientAbstract {
 

@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { UsersService } from '../../domain/users/users.service';
+import { UsersService } from '@jnscas/cy/src/domain/users/users.service';
 
 @Injectable()
 export class SyncEmailsCron implements OnModuleInit {

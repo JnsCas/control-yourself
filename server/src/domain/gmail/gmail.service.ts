@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { GmailClientAbstract } from './gmail.client.abstract';
-import { GetMessageResponse } from './responses/get-message.response';
-import { User } from 'src/domain/users/entities/user.entity';
+import { GmailClientAbstract } from '@jnscas/cy/src/domain/gmail/gmail.client.abstract';
+import { GetMessageResponse } from '@jnscas/cy/src/domain/gmail/responses/get-message.response';
+import { User } from '@jnscas/cy/src/domain/users/entities/user.entity';
 
 @Injectable()
 export class GmailService {
