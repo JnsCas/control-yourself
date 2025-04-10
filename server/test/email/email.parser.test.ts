@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { EmailParser } from '@jnscas/cy/src/email/email.parser';
-import { ExpenseCurrency } from '@jnscas/cy/src/expenses/types/expense.types';
+import { EmailParser } from '@jnscas/cy/src/domain/email/email.parser';
+import { ExpenseCurrency } from '@jnscas/cy/src/domain/expenses/types/expense.types';
 
 describe('EmailParser', () => {
   let parser: EmailParser;
