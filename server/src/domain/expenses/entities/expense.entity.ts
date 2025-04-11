@@ -1,6 +1,7 @@
-import { CreateExpenseDto, ExpenseCurrency, ExpenseSource, ExpenseType } from '@jnscas/cy/src/domain/expenses/types/expense.types';
+import { CreateExpenseDto } from '@jnscas/cy/src/domain/expenses/dtos/create-expense.dto';
 import { ExpenseDocument } from '@jnscas/cy/src/domain/expenses/schemas/expense.schema';
 import { MongoIdManager } from '@jnscas/cy/src/domain/mongo/MongoIdManager';
+import { ExpenseCurrency, ExpenseSource, ExpenseType } from '@jnscas/cy/src/domain/expenses/types/expense.types';
 
 export class Expense {
   constructor(
@@ -13,7 +14,7 @@ export class Expense {
     readonly createdAt: Date,
     readonly updatedAt: Date,
     readonly source: ExpenseSource,
-    readonly currency?: ExpenseCurrency,
+    readonly currency: ExpenseCurrency,
     readonly cardNumber?: string,
     readonly emailId?: string,
   ) {}
@@ -56,19 +57,7 @@ export class Expense {
     return documents.map(document => this.restore(document));
   }
 
-  toDocument(): {
-    userId: string;
-    amount: number;
-    merchant: string;
-    date: Date;
-    type: ExpenseType;
-    source: ExpenseSource;
-    createdAt: Date;
-    updatedAt: Date;
-    currency?: ExpenseCurrency;
-    cardNumber?: string;
-    emailId?: string;
-  } {
+  toDocument(): Partial<ExpenseDocument> {
     return {
       userId: this.userId,
       amount: this.amount,

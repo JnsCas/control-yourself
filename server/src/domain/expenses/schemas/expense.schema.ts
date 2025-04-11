@@ -19,7 +19,7 @@ class Expense {
   @Prop({ required: true, enum: ExpenseType })
   type: ExpenseType;
 
-  @Prop({ enum: ExpenseSource })
+  @Prop({ required: true, enum: ExpenseSource })
   source: ExpenseSource;
 
   @Prop({ default: Date.now })
@@ -28,8 +28,8 @@ class Expense {
   @Prop({ default: Date.now })
   updatedAt: Date;
 
-  @Prop({ enum: ExpenseCurrency })
-  currency?: ExpenseCurrency;
+  @Prop({ required: true, enum: ExpenseCurrency })
+  currency: ExpenseCurrency;
 
   @Prop({ type: MongooseSchema.Types.String })
   cardNumber?: string;

@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Logger, Param, Post, Query } from '@nestjs/common';
 import { ExpensesService } from '@jnscas/cy/src/domain/expenses/expenses.service';
-import { CreateExpenseDto } from "@jnscas/cy/src/domain/expenses/types/expense.types";
+import { CreateExpenseDto } from "@jnscas/cy/src/domain/expenses/dtos/create-expense.dto";
+import { GetExpensesByMonthDto } from "@jnscas/cy/src/domain/expenses/dtos/get-expenses-by-month.dto";
 
 @Controller('expenses')
 export class ExpensesController {
@@ -22,14 +23,10 @@ export class ExpensesController {
   }
 
   @Get(':userId/:year/:month')
-  async getExpensesByMonth(
-    @Param('userId') userId: string,
-    @Param('year') year: number,
-    @Param('month') month: number
-  ) {
-    this.logger.log(`Fetching expenses for user ${userId} - Month: ${month}, Year: ${year}`);
+  async getExpensesByMonth(@Param() params: GetExpensesByMonthDto) {
+    this.logger.log(`Fetching expenses for user ${params.userId} - Month: ${params.month}, Year: ${params.year}`);
     try {
-      const expenses = await this.expensesService.getExpensesByMonth(userId, month, year);
+      const expenses = await this.expensesService.getExpensesByMonth(params.userId, params.month, params.year);
       this.logger.log(`Found ${expenses.length} expenses`);
       return expenses;
     } catch (error) {

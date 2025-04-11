@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Expense } from '@jnscas/cy/src/domain/expenses/entities/expense.entity';
-import { CreateExpenseDto } from '@jnscas/cy/src/domain/expenses/types/expense.types';
+import { CreateExpenseDto } from '@jnscas/cy/src/domain/expenses/dtos/create-expense.dto';
 import { ExpenseRepository } from '@jnscas/cy/src/domain/expenses/repositories/expense.repository';
 
 @Injectable()
