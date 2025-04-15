@@ -1,10 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { EmailParser } from '@jnscas/cy/src/domain/email/email.parser';
-import { ExpenseSource, ExpenseType } from '@jnscas/cy/src/domain/expenses/types/expense.types';
+import { ExpenseSource, ExpenseType } from '@jnscas/cy/src/domain/expenses/expense.types';
 import { ExpensesService } from '@jnscas/cy/src/domain/expenses/expenses.service';
 import { GmailService } from '@jnscas/cy/src/domain/gmail/gmail.service';
 import { User } from '@jnscas/cy/src/domain/users/entities/user.entity';
-import { UserRepository } from '@jnscas/cy/src/domain/users/repositories/user.repository';
+import { UserRepository } from '@jnscas/cy/src/domain/users/user.repository';
+import { Expense } from '@jnscas/cy/src/domain/expenses/entities/expense.entity';
 
 @Injectable()
 export class UsersService {
@@ -17,14 +18,9 @@ export class UsersService {
     private readonly emailParser: EmailParser
   ) {}
 
-  async createUser(username: string, telegramId?: string): Promise<User> {
-    const user = User.create({
-      username,
-      autoExpenseEnabled: false,
-      telegramId,
-    });
-
-    return this.userRepository.create(user);
+  async createUser(user: User): Promise<User> {
+    this.logger.log(`Creating user ${user.id}`);
+    return this.userRepository.save(user);
   }
 
   async processEmails(user: User): Promise<void> {
@@ -36,17 +32,8 @@ export class UsersService {
         this.logger.log(`Skipping non-accepted transaction for email ID: ${emailId}`);
         continue;
       }
-      await this.expenseService.create({
-        userId: user.id,
-        amount: parsedEmail.amount,
-        merchant: parsedEmail.merchant,
-        date: parsedEmail.date,
-        type: ExpenseType.AUTO, // FIXME
-        source: ExpenseSource.GMAIL,
-        currency: parsedEmail.currency,
-        cardNumber: parsedEmail.cardNumber,
-        emailId: parsedEmail.id,
-      });
+      const expense = Expense.create(user.id, parsedEmail.amount, parsedEmail.merchant, new Date(parsedEmail.date), ExpenseType.AUTO, ExpenseSource.GMAIL, parsedEmail.currency, parsedEmail.cardNumber, parsedEmail.id);
+      await this.expenseService.create(expense);
     }
     await this.userRepository.updateLastEmailSync(user.id);
     this.logger.log(`Synced ${newEmailsIds.length} new emails for user ${user.id}`);

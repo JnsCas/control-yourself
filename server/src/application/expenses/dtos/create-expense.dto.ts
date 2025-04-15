@@ -1,4 +1,4 @@
-import { ExpenseCurrency, ExpenseSource, ExpenseType } from '@jnscas/cy/src/domain/expenses/types/expense.types';
+import { ExpenseCurrency, ExpenseSource, ExpenseType } from '@jnscas/cy/src/domain/expenses/expense.types';
 import { IsDateString, IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateExpenseDto {

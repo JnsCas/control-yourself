@@ -1,7 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
 import { Expense } from '@jnscas/cy/src/domain/expenses/entities/expense.entity';
-import { CreateExpenseDto } from '@jnscas/cy/src/domain/expenses/dtos/create-expense.dto';
-import { ExpenseRepository } from '@jnscas/cy/src/domain/expenses/repositories/expense.repository';
+import { ExpenseRepository } from '@jnscas/cy/src/domain/expenses/expense.repository';
+import { Injectable, Logger } from '@nestjs/common';
 
 @Injectable()
 export class ExpensesService {
@@ -11,10 +10,10 @@ export class ExpensesService {
     private readonly expenseRepository: ExpenseRepository
   ) {}
 
-  async create(createExpenseDto: CreateExpenseDto): Promise<Expense> {
-    this.logger.debug('Creating expense with data:', createExpenseDto);
+  async create(expense: Expense): Promise<Expense> {
+    this.logger.debug('Creating expense with data:', expense);
     try {
-      const savedExpense = await this.expenseRepository.create(Expense.create(createExpenseDto));
+      const savedExpense = await this.expenseRepository.save(expense);
       this.logger.debug('Expense saved successfully:', { id: savedExpense.id });
       return savedExpense;
     } catch (error) {

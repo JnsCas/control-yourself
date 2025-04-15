@@ -2,6 +2,8 @@ import { Controller, Post, Body, Get, Param, NotFoundException, BadRequestExcept
 import { UsersService } from '@jnscas/cy/src/domain/users/users.service';
 import { GmailService } from '@jnscas/cy/src/domain/gmail/gmail.service';
 import { Logger } from '@nestjs/common';
+import { User } from '@jnscas/cy/src/domain/users/entities/user.entity';
+import { CreateUserDto } from '@jnscas/cy/src/application/users/dtos/create-user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -13,23 +15,22 @@ export class UsersController {
   ) {}
 
   @Post()
-  async createUser(
-    @Body() createUserDto: { username: string; telegramId?: string }
-  ) {
+  async createUser(@Body() createUserDto: CreateUserDto) {
     this.logger.log('Creating user', { createUserDto });
-    if (createUserDto.telegramId) {
-      const existingUserByTelegram = await this.usersService.getUserByTelegramId(createUserDto.telegramId);
+    const { username, telegramId } = createUserDto;
+    
+    if (telegramId) {
+      const existingUserByTelegram = await this.usersService.getUserByTelegramId(telegramId);
       if (existingUserByTelegram) {
         throw new BadRequestException('User with this telegramId already exists');
       }
     }
 
-    const user = await this.usersService.createUser(
-      createUserDto.username,
-      createUserDto.telegramId
-    );
-    this.logger.log('User created', { user });
-    return user;
+    const user = User.create(username, false, telegramId);
+    const savedUser = await this.usersService.createUser(user);
+    
+    this.logger.log('User created', { savedUser });
+    return savedUser;
   }
 
   @Get(':telegramId')

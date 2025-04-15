@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { ExpenseCurrency } from "@jnscas/cy/src/domain/expenses/types/expense.types";
+import { ExpenseCurrency } from "@jnscas/cy/src/domain/expenses/expense.types";
 
 export interface ParsedEmailTransaction {
   id: string;

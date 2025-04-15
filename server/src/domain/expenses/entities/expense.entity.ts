@@ -1,7 +1,6 @@
-import { CreateExpenseDto } from '@jnscas/cy/src/domain/expenses/dtos/create-expense.dto';
-import { ExpenseDocument } from '@jnscas/cy/src/domain/expenses/schemas/expense.schema';
+import { ExpenseDocument } from '@jnscas/cy/src/domain/expenses/expense.schema';
+import { ExpenseCurrency, ExpenseSource, ExpenseType } from '@jnscas/cy/src/domain/expenses/expense.types';
 import { MongoIdManager } from '@jnscas/cy/src/domain/mongo/MongoIdManager';
-import { ExpenseCurrency, ExpenseSource, ExpenseType } from '@jnscas/cy/src/domain/expenses/types/expense.types';
 
 export class Expense {
   constructor(
@@ -19,20 +18,20 @@ export class Expense {
     readonly emailId?: string,
   ) {}
 
-  static create(createExpenseDto: CreateExpenseDto): Expense {
+  static create(userId: string, amount: number, merchant: string, date: Date, type: ExpenseType, source: ExpenseSource, currency: ExpenseCurrency, cardNumber?: string, emailId?: string): Expense {
     return new Expense(
       MongoIdManager.randomId(),
-      createExpenseDto.userId,
-      createExpenseDto.amount,
-      createExpenseDto.merchant,
-      createExpenseDto.date,
-      createExpenseDto.type,
+      userId,
+      amount,
+      merchant,
+      date,
+      type,
       new Date(),
       new Date(),
-      createExpenseDto.source,
-      createExpenseDto.currency,
-      createExpenseDto.cardNumber,
-      createExpenseDto.emailId
+      source,
+      currency,
+      cardNumber,
+      emailId
     );
   }
 
@@ -44,7 +43,7 @@ export class Expense {
       document.merchant,
       document.date,
       document.type,
-      document.date,
+      document.createdAt,
       document.updatedAt,
       document.source,
       document.currency,

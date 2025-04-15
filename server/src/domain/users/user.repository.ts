@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { UserDocument } from '@jnscas/cy/src/domain/users/schemas/user.schema';
+import { UserDocument } from '@jnscas/cy/src/domain/users/user.schema';
 import { User } from '@jnscas/cy/src/domain/users/entities/user.entity';
 
 @Injectable()
@@ -10,7 +10,7 @@ export class UserRepository {
     @InjectModel(User.name) private userModel: Model<UserDocument>
   ) {}
 
-  async create(user: User): Promise<User> {
+  async save(user: User): Promise<User> {
     await new this.userModel(user.toDocument()).save();
     return user;
   }
