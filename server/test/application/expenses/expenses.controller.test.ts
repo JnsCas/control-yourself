@@ -1,29 +1,12 @@
-import { Test, TestingModule } from '@nestjs/testing'
-import { INestApplication, ValidationPipe } from '@nestjs/common'
-import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify'
-import * as request from 'supertest'
-import { AppModule } from '@jnscas/cy/src/application/app.module'
 import { ExpenseCurrency, ExpenseSource, ExpenseType } from '@jnscas/cy/src/domain/expenses/expense.types'
+import { NestFastifyApplication } from '@nestjs/platform-fastify'
+import { initTestApp } from '@jnscas/cy/test/support/testApp'
 
 describe('ExpensesController (e2e)', () => {
-  let app: INestApplication
+  let app: NestFastifyApplication
 
   beforeAll(async () => {
-    const testingModule: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile()
-
-    app = testingModule.createNestApplication<NestFastifyApplication>(
-      new FastifyAdapter(),
-    )
-    app.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        transform: true,
-      }),
-    )
-    await app.init()
-    await app.getHttpAdapter().getInstance().ready()
+    app = (await initTestApp()).app
   })
 
   afterAll(async () => {
@@ -42,18 +25,25 @@ describe('ExpensesController (e2e)', () => {
     }
 
     it('should create an expense with valid data', () => {
-      return request(app.getHttpServer())
-        .post('/expenses')
-        .send(validExpense)
-        .expect(201)
-        .expect((res) => {
-          expect(res.body).toHaveProperty('id')
-          expect(res.body.userId).toBe(validExpense.userId)
-          expect(res.body.amount).toBe(validExpense.amount)
-          expect(res.body.merchant).toBe(validExpense.merchant)
-          expect(res.body.type).toBe(validExpense.type)
-          expect(res.body.source).toBe(validExpense.source)
-          expect(res.body.currency).toBe(validExpense.currency)
+      return app.inject({
+        method: 'POST',
+        url: '/expenses',
+        body: validExpense,
+      })
+        .then((res) => {
+          expect(res.statusCode).toBe(201)
+          const payload = JSON.parse(res.payload)
+          expect(payload).toEqual(
+            expect.objectContaining({
+              id: expect.any(String),
+              userId: validExpense.userId,
+              amount: validExpense.amount,
+              merchant: validExpense.merchant,
+              type: validExpense.type,
+              source: validExpense.source,
+              currency: validExpense.currency,
+            }),
+          )
         })
     })
 
@@ -61,13 +51,20 @@ describe('ExpensesController (e2e)', () => {
       const invalidExpense = { ...validExpense }
       delete invalidExpense.amount
 
-      return request(app.getHttpServer())
-        .post('/expenses')
-        .send(invalidExpense)
-        .expect(400)
-        .expect((res) => {
-          expect(res.body.message).toEqual(
-            expect.arrayContaining(['amount must be a number conforming to the specified constraints']),
+        return app.inject({
+        method: 'POST',
+        url: '/expenses',
+        body: invalidExpense,
+      })
+        .then((res) => {
+          expect(res.statusCode).toBe(400)
+          const payload = JSON.parse(res.payload)
+          expect(payload).toEqual(
+            expect.objectContaining({
+              message: expect.arrayContaining(['amount must be a number conforming to the specified constraints']),
+              statusCode: 400,
+              error: 'Bad Request',
+            }),
           )
         })
     })
@@ -80,16 +77,23 @@ describe('ExpensesController (e2e)', () => {
         currency: 'INVALID_CURRENCY',
       }
 
-      return request(app.getHttpServer())
-        .post('/expenses')
-        .send(invalidExpense)
-        .expect(400)
-        .expect((res) => {
-          expect(res.body.message).toEqual(
-            expect.arrayContaining([
-              'source must be one of the following values: gmail, website, telegram',
-              'currency must be one of the following values: ARS, USD',
-            ]),
+      return app.inject({
+        method: 'POST',
+        url: '/expenses',
+        body: invalidExpense,
+      })
+        .then((res) => {
+          expect(res.statusCode).toBe(400)
+          const payload = JSON.parse(res.payload)
+          expect(payload).toEqual(
+            expect.objectContaining({
+              message: expect.arrayContaining([
+                'source must be one of the following values: gmail, website, telegram',
+                'currency must be one of the following values: ARS, USD',
+              ]),
+              statusCode: 400,
+              error: 'Bad Request',
+            }),
           )
         })
     })
@@ -100,12 +104,21 @@ describe('ExpensesController (e2e)', () => {
         date: 'invalid-date',
       }
 
-      return request(app.getHttpServer())
-        .post('/expenses')
-        .send(invalidExpense)
-        .expect(400)
-        .expect((res) => {
-          expect(res.body.message).toEqual(expect.arrayContaining(['date must be a valid ISO 8601 date string']))
+      return app.inject({
+        method: 'POST',
+        url: '/expenses',
+        body: invalidExpense,
+      })
+        .then((res) => {
+          expect(res.statusCode).toBe(400)
+          const payload = JSON.parse(res.payload)
+          expect(payload).toEqual(
+            expect.objectContaining({
+              message: expect.arrayContaining(['date must be a valid ISO 8601 date string']),
+              statusCode: 400,
+              error: 'Bad Request',
+            }),
+          )
         })
     })
   })
@@ -116,12 +129,14 @@ describe('ExpensesController (e2e)', () => {
       const year = 2024
       const month = 3
 
-      return request(app.getHttpServer())
-        .get(`/expenses/${userId}/${year}/${month}`)
-        .expect(200)
-        .expect((res) => {
-          expect(Array.isArray(res.body)).toBe(true)
-        })
+      return app.inject({
+        method: 'GET',
+        url: `/expenses/${userId}/${year}/${month}`,
+      }).then((res) => {
+        expect(res.statusCode).toBe(200)
+        const payload = JSON.parse(res.payload)
+        expect(Array.isArray(payload)).toBe(true)
+      })
     })
 
     it('should fail with invalid year or month', () => {
@@ -129,14 +144,20 @@ describe('ExpensesController (e2e)', () => {
       const invalidYear = 'invalid-year'
       const invalidMonth = 'invalid-month'
 
-      return request(app.getHttpServer())
-        .get(`/expenses/${userId}/${invalidYear}/${invalidMonth}`)
-        .expect(400)
-        .expect((res) => {
-          expect(res.body.message).toEqual(
-            expect.arrayContaining(['year must be a number string', 'month must be a number string']),
-          )
-        })
+      return app.inject({
+        method: 'GET',
+        url: `/expenses/${userId}/${invalidYear}/${invalidMonth}`,
+      }).then((res) => {
+        expect(res.statusCode).toBe(400)
+        const payload = JSON.parse(res.payload)
+        expect(payload).toEqual(
+          expect.objectContaining({
+            message: expect.arrayContaining(['year must be a number string', 'month must be a number string']),
+            statusCode: 400,
+            error: 'Bad Request',
+          }),
+        )
+      })
     })
   })
 })
