@@ -7,7 +7,8 @@
   },
   "scripts": {
     "lint": "eslint \"{server,bot,mock-services}/**/*.ts\" --fix",
-    "format": "prettier --write \"server/**/*.ts\""
+    "format": "prettier --write \"server/**/*.ts\"",
+    "prepare": "husky"
   },
   "repository": {
     "type": "git",
@@ -26,9 +27,9 @@
     "eslint": "^8.0.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
-    "prettier": "^3.0.0",
-    "husky": "^8.0.3",
-    "lint-staged": "^13.2.2"
+    "husky": "^9.1.7",
+    "lint-staged": "^13.2.2",
+    "prettier": "^3.0.0"
   },
   "lint-staged": {
     "*.{js,cjs,ts}": "eslint --cache --fix",
