@@ -10,7 +10,6 @@ export class ExpenseRepository {
 
   async save(expense: Expense): Promise<Expense> {
     await new this.expenseModel(expense.toDocument()).save()
-
     return expense
   }
 

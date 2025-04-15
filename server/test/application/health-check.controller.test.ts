@@ -13,23 +13,27 @@ describe('HealthCheckController (e2e)', () => {
   })
 
   it('/ (GET)', () => {
-    return app.inject({
-      method: 'GET',
-      url: '/health-check',
-    }).then((res) => {
-      expect(res.statusCode).toBe(200)
-      expect(res.body).toBe('OK')
-    })
+    return app
+      .inject({
+        method: 'GET',
+        url: '/health-check',
+      })
+      .then((res) => {
+        expect(res.statusCode).toBe(200)
+        expect(res.body).toBe('OK')
+      })
   })
 
   describe('Error Handling', () => {
     it('returns 404 for non-existent route', () => {
-      return app.inject({
-        method: 'GET',
-        url: '/non-existent',
-      }).then((res) => {
-        expect(res.statusCode).toBe(404)
-      })
+      return app
+        .inject({
+          method: 'GET',
+          url: '/non-existent',
+        })
+        .then((res) => {
+          expect(res.statusCode).toBe(404)
+        })
     })
   })
 })

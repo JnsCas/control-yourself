@@ -1,5 +1,5 @@
-import { Module } from "@nestjs/common";
-import { ImapController } from "./imap.controller";
+import { Module } from '@nestjs/common'
+import { ImapController } from './imap.controller'
 
 @Module({
   controllers: [ImapController],

@@ -25,11 +25,12 @@ describe('ExpensesController (e2e)', () => {
     }
 
     it('should create an expense with valid data', () => {
-      return app.inject({
-        method: 'POST',
-        url: '/expenses',
-        body: validExpense,
-      })
+      return app
+        .inject({
+          method: 'POST',
+          url: '/expenses',
+          body: validExpense,
+        })
         .then((res) => {
           expect(res.statusCode).toBe(201)
           const payload = JSON.parse(res.payload)
@@ -51,11 +52,12 @@ describe('ExpensesController (e2e)', () => {
       const invalidExpense = { ...validExpense }
       delete invalidExpense.amount
 
-        return app.inject({
-        method: 'POST',
-        url: '/expenses',
-        body: invalidExpense,
-      })
+      return app
+        .inject({
+          method: 'POST',
+          url: '/expenses',
+          body: invalidExpense,
+        })
         .then((res) => {
           expect(res.statusCode).toBe(400)
           const payload = JSON.parse(res.payload)
@@ -77,11 +79,12 @@ describe('ExpensesController (e2e)', () => {
         currency: 'INVALID_CURRENCY',
       }
 
-      return app.inject({
-        method: 'POST',
-        url: '/expenses',
-        body: invalidExpense,
-      })
+      return app
+        .inject({
+          method: 'POST',
+          url: '/expenses',
+          body: invalidExpense,
+        })
         .then((res) => {
           expect(res.statusCode).toBe(400)
           const payload = JSON.parse(res.payload)
@@ -104,11 +107,12 @@ describe('ExpensesController (e2e)', () => {
         date: 'invalid-date',
       }
 
-      return app.inject({
-        method: 'POST',
-        url: '/expenses',
-        body: invalidExpense,
-      })
+      return app
+        .inject({
+          method: 'POST',
+          url: '/expenses',
+          body: invalidExpense,
+        })
         .then((res) => {
           expect(res.statusCode).toBe(400)
           const payload = JSON.parse(res.payload)
@@ -129,14 +133,16 @@ describe('ExpensesController (e2e)', () => {
       const year = 2024
       const month = 3
 
-      return app.inject({
-        method: 'GET',
-        url: `/expenses/${userId}/${year}/${month}`,
-      }).then((res) => {
-        expect(res.statusCode).toBe(200)
-        const payload = JSON.parse(res.payload)
-        expect(Array.isArray(payload)).toBe(true)
-      })
+      return app
+        .inject({
+          method: 'GET',
+          url: `/expenses/${userId}/${year}/${month}`,
+        })
+        .then((res) => {
+          expect(res.statusCode).toBe(200)
+          const payload = JSON.parse(res.payload)
+          expect(Array.isArray(payload)).toBe(true)
+        })
     })
 
     it('should fail with invalid year or month', () => {
@@ -144,20 +150,22 @@ describe('ExpensesController (e2e)', () => {
       const invalidYear = 'invalid-year'
       const invalidMonth = 'invalid-month'
 
-      return app.inject({
-        method: 'GET',
-        url: `/expenses/${userId}/${invalidYear}/${invalidMonth}`,
-      }).then((res) => {
-        expect(res.statusCode).toBe(400)
-        const payload = JSON.parse(res.payload)
-        expect(payload).toEqual(
-          expect.objectContaining({
-            message: expect.arrayContaining(['year must be a number string', 'month must be a number string']),
-            statusCode: 400,
-            error: 'Bad Request',
-          }),
-        )
-      })
+      return app
+        .inject({
+          method: 'GET',
+          url: `/expenses/${userId}/${invalidYear}/${invalidMonth}`,
+        })
+        .then((res) => {
+          expect(res.statusCode).toBe(400)
+          const payload = JSON.parse(res.payload)
+          expect(payload).toEqual(
+            expect.objectContaining({
+              message: expect.arrayContaining(['year must be a number string', 'month must be a number string']),
+              statusCode: 400,
+              error: 'Bad Request',
+            }),
+          )
+        })
     })
   })
 })
