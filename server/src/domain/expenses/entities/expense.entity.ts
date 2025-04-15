@@ -1,6 +1,6 @@
-import { ExpenseDocument } from '@jnscas/cy/src/domain/expenses/expense.schema';
-import { ExpenseCurrency, ExpenseSource, ExpenseType } from '@jnscas/cy/src/domain/expenses/expense.types';
-import { MongoIdManager } from '@jnscas/cy/src/domain/mongo/MongoIdManager';
+import { ExpenseDocument } from '@jnscas/cy/src/domain/expenses/expense.schema'
+import { ExpenseCurrency, ExpenseSource, ExpenseType } from '@jnscas/cy/src/domain/expenses/expense.types'
+import { MongoIdManager } from '@jnscas/cy/src/domain/mongo/MongoIdManager'
 
 export class Expense {
   constructor(
@@ -18,7 +18,17 @@ export class Expense {
     readonly emailId?: string,
   ) {}
 
-  static create(userId: string, amount: number, merchant: string, date: Date, type: ExpenseType, source: ExpenseSource, currency: ExpenseCurrency, cardNumber?: string, emailId?: string): Expense {
+  static create(
+    userId: string,
+    amount: number,
+    merchant: string,
+    date: Date,
+    type: ExpenseType,
+    source: ExpenseSource,
+    currency: ExpenseCurrency,
+    cardNumber?: string,
+    emailId?: string,
+  ): Expense {
     return new Expense(
       MongoIdManager.randomId(),
       userId,
@@ -31,8 +41,8 @@ export class Expense {
       source,
       currency,
       cardNumber,
-      emailId
-    );
+      emailId,
+    )
   }
 
   static restore(document: ExpenseDocument): Expense {
@@ -48,12 +58,12 @@ export class Expense {
       document.source,
       document.currency,
       document.cardNumber,
-      document.emailId
+      document.emailId,
     )
   }
 
   static restoreList(documents: ExpenseDocument[]): Expense[] {
-    return documents.map(document => this.restore(document));
+    return documents.map((document) => this.restore(document))
   }
 
   toDocument(): Partial<ExpenseDocument> {
@@ -68,7 +78,7 @@ export class Expense {
       updatedAt: this.updatedAt,
       currency: this.currency,
       cardNumber: this.cardNumber,
-      emailId: this.emailId
-    };
+      emailId: this.emailId,
+    }
   }
-} 
+}

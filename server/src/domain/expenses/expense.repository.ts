@@ -1,29 +1,30 @@
-import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { ExpenseDocument } from '@jnscas/cy/src/domain/expenses/expense.schema';
-import { Expense } from "@jnscas/cy/src/domain/expenses/entities/expense.entity";
+import { Injectable } from '@nestjs/common'
+import { InjectModel } from '@nestjs/mongoose'
+import { Model } from 'mongoose'
+import { ExpenseDocument } from '@jnscas/cy/src/domain/expenses/expense.schema'
+import { Expense } from '@jnscas/cy/src/domain/expenses/entities/expense.entity'
 
 @Injectable()
 export class ExpenseRepository {
-  constructor(
-    @InjectModel(Expense.name) private expenseModel: Model<ExpenseDocument>
-  ) {}
+  constructor(@InjectModel(Expense.name) private expenseModel: Model<ExpenseDocument>) {}
 
   async save(expense: Expense): Promise<Expense> {
-    await new this.expenseModel(expense.toDocument()).save();
+    await new this.expenseModel(expense.toDocument()).save()
     return expense
   }
 
   async findByMonth(userId: string, startDate: Date, endDate: Date): Promise<Expense[]> {
-    const results = await this.expenseModel.find({
-      userId,
-      date: {
-        $gte: startDate,
-        $lte: endDate
-      }
-    }).sort({ date: -1 }).exec();
-    return Expense.restoreList(results);
+    const results = await this.expenseModel
+      .find({
+        userId,
+        date: {
+          $gte: startDate,
+          $lte: endDate,
+        },
+      })
+      .sort({ date: -1 })
+      .exec()
+    return Expense.restoreList(results)
   }
 
   async getTotalByMonth(userId: string, startDate: Date, endDate: Date): Promise<number> {
@@ -33,18 +34,18 @@ export class ExpenseRepository {
           userId,
           date: {
             $gte: startDate,
-            $lte: endDate
-          }
-        }
+            $lte: endDate,
+          },
+        },
       },
       {
         $group: {
           _id: null,
-          total: { $sum: '$amount' }
-        }
-      }
-    ]);
+          total: { $sum: '$amount' },
+        },
+      },
+    ])
 
-    return result[0]?.total || 0;
+    return result[0]?.total || 0
   }
-} 
+}

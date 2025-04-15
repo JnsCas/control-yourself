@@ -1,12 +1,12 @@
-import { IsNumberString, IsString } from 'class-validator';
+import { IsNumberString, IsString } from 'class-validator'
 
 export class GetExpensesByMonthDto {
   @IsString()
-  userId: string;
+  userId: string
 
   @IsNumberString()
-  year: number;
+  year: number
 
   @IsNumberString()
-  month: number;
-} 
+  month: number
+}

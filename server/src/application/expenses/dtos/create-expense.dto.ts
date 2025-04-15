@@ -1,33 +1,22 @@
-import { ExpenseCurrency, ExpenseSource, ExpenseType } from '@jnscas/cy/src/domain/expenses/expense.types';
-import { IsDateString, IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
+import { ExpenseCurrency, ExpenseSource } from '@jnscas/cy/src/domain/expenses/expense.types'
+import { IsDateString, IsEnum, IsNumber, IsString } from 'class-validator'
 
 export class CreateExpenseDto {
   @IsString()
-  userId: string;
+  userId: string
 
   @IsNumber()
-  amount: number;
+  amount: number
 
   @IsString()
-  merchant: string;
+  merchant: string
 
   @IsDateString()
-  date: string;
-
-  @IsEnum(ExpenseType)
-  type: ExpenseType;
+  date: string
 
   @IsEnum(ExpenseSource)
-  source: ExpenseSource;
+  source: ExpenseSource
 
   @IsEnum(ExpenseCurrency)
-  currency: ExpenseCurrency;
-
-  @IsString()
-  @IsOptional()
-  cardNumber?: string;
-
-  @IsString()
-  @IsOptional()
-  emailId?: string;
+  currency: ExpenseCurrency
 }

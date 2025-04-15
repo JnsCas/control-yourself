@@ -1,0 +1,31 @@
+{
+  "name": "control-yourself",
+  "version": "1.0.0",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "lint": "eslint \"{server,bot,mock-services}/**/*.ts\" --fix",
+    "format": "prettier --write \"server/**/*.ts\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JnsCas/control-yourself.git"
+  },
+  "author": "JnsCas",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JnsCas/control-yourself/issues"
+  },
+  "homepage": "https://github.com/JnsCas/control-yourself#readme",
+  "description": "",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "eslint": "^8.0.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "prettier": "^3.0.0"
+  }
+}

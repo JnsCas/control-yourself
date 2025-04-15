@@ -1,7 +1,7 @@
-import { Types } from 'mongoose';
+import { Types } from 'mongoose'
 
 export class MongoIdManager {
   static randomId(): string {
-    return new Types.ObjectId().toString();
+    return new Types.ObjectId().toString()
   }
 }

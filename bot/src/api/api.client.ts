@@ -1,9 +1,8 @@
-import axios, { AxiosInstance } from 'axios';
-import logger from '../utils/logger';
+import axios, { AxiosInstance } from "axios";
+import logger from "../utils/logger";
 
 export class ApiClient {
-  
-  private readonly httpClient: AxiosInstance
+  private readonly httpClient: AxiosInstance;
 
   constructor() {
     this.httpClient = axios.create({
@@ -12,43 +11,46 @@ export class ApiClient {
   }
 
   async getAuthUrl(telegramId: string) {
-    logger.info('Getting auth URL', { telegramId });
+    logger.info("Getting auth URL", { telegramId });
     try {
-      const response = await this.httpClient.get(`/auth/login?telegramId=${telegramId}`, {
-        maxRedirects: 0,
-        validateStatus: (status) => status === 302
-      });
-      logger.info('Successfully got auth URL');
+      const response = await this.httpClient.get(
+        `/auth/login?telegramId=${telegramId}`,
+        {
+          maxRedirects: 0,
+          validateStatus: (status) => status === 302,
+        },
+      );
+      logger.info("Successfully got auth URL");
       return response.headers.location;
     } catch (error) {
-      logger.error('Failed to get auth URL', { error });
+      logger.error("Failed to get auth URL", { error });
       throw error;
     }
   }
 
   async createUser(telegramId: string, username: string) {
-    logger.info('Creating new user', { telegramId, username });
+    logger.info("Creating new user", { telegramId, username });
     try {
-      const response = await this.httpClient.post('/users', {
+      const response = await this.httpClient.post("/users", {
         telegramId,
         username,
       });
-      logger.info('Successfully created user', { telegramId });
+      logger.info("Successfully created user", { telegramId });
       return response.data;
     } catch (error) {
-      logger.error('Failed to create user', { telegramId, error });
+      logger.error("Failed to create user", { telegramId, error });
       throw error;
     }
   }
 
   async getUserByTelegramId(telegramId: string) {
-    logger.info('Fetching user', { telegramId });
+    logger.info("Fetching user", { telegramId });
     try {
       const response = await this.httpClient.get(`/users/${telegramId}`);
-      logger.info('Successfully fetched user', { telegramId });
+      logger.info("Successfully fetched user", { telegramId });
       return response.data;
     } catch (error) {
-      logger.error('Failed to fetch user', { telegramId, error });
+      logger.error("Failed to fetch user", { telegramId, error });
       throw error;
     }
   }
@@ -58,51 +60,55 @@ export class ApiClient {
     amount: number;
     merchant: string;
     date: Date;
-    type: 'MANUAL' | 'AUTO';
-    source?: 'GMAIL';
+    type: "MANUAL" | "AUTO";
+    source?: "GMAIL";
   }) {
-    logger.info('Creating new expense', { 
+    logger.info("Creating new expense", {
       userId: expenseData.userId,
       amount: expenseData.amount,
       merchant: expenseData.merchant,
-      type: expenseData.type
+      type: expenseData.type,
     });
     try {
-      const response = await this.httpClient.post('/expenses', expenseData);
-      logger.info('Successfully created expense', { 
+      const response = await this.httpClient.post("/expenses", expenseData);
+      logger.info("Successfully created expense", {
         userId: expenseData.userId,
-        amount: expenseData.amount
+        amount: expenseData.amount,
       });
       return response.data;
     } catch (error) {
-      logger.error('Failed to create expense', { 
+      logger.error("Failed to create expense", {
         userId: expenseData.userId,
-        error 
+        error,
       });
       throw error;
     }
   }
 
   async getExpensesByMonth(userId: string, year: number, month: number) {
-    logger.info('Fetching expenses by month', { userId, year, month });
+    logger.info("Fetching expenses by month", { userId, year, month });
     try {
-      const response = await this.httpClient.get(`/expenses/${userId}/${year}/${month}`);
-      logger.info('Successfully fetched expenses', { userId, year, month });
+      const response = await this.httpClient.get(
+        `/expenses/${userId}/${year}/${month}`,
+      );
+      logger.info("Successfully fetched expenses", { userId, year, month });
       return response.data;
     } catch (error) {
-      logger.error('Failed to fetch expenses', { userId, year, month, error });
+      logger.error("Failed to fetch expenses", { userId, year, month, error });
       throw error;
     }
   }
 
   async syncEmails(userId: string) {
-    logger.info('Syncing emails', { userId });
+    logger.info("Syncing emails", { userId });
     try {
-      const response = await this.httpClient.post(`/users/${userId}/sync-emails`);
-      logger.info('Successfully synced emails', { userId });
+      const response = await this.httpClient.post(
+        `/users/${userId}/sync-emails`,
+      );
+      logger.info("Successfully synced emails", { userId });
       return response.data;
     } catch (error) {
-      logger.error('Failed to sync emails', { userId, error });
+      logger.error("Failed to sync emails", { userId, error });
       throw error;
     }
   }

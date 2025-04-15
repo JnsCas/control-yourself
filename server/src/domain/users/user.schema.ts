@@ -1,30 +1,30 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
+import { Document } from 'mongoose'
 
-export type UserDocument = User & Document;
+export type UserDocument = User & Document
 
 @Schema()
 export class User {
   @Prop()
-  telegramId?: string;
+  telegramId?: string
 
   @Prop({ required: true })
-  username: string;
+  username: string
 
   @Prop()
-  googleAccessToken?: string;
+  googleAccessToken?: string
 
   @Prop()
-  googleRefreshToken?: string;
+  googleRefreshToken?: string
 
   @Prop({ default: false })
-  autoExpenseEnabled: boolean;
+  autoExpenseEnabled: boolean
 
   @Prop()
-  lastEmailSync?: Date;
+  lastEmailSync?: Date
 
   @Prop({ default: Date.now })
-  createdAt: Date;
+  createdAt: Date
 }
 
-export const UserSchema = SchemaFactory.createForClass(User); 
+export const UserSchema = SchemaFactory.createForClass(User)

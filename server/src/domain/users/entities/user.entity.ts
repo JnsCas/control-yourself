@@ -1,5 +1,5 @@
-import { MongoIdManager } from '@jnscas/cy/src/domain/mongo/MongoIdManager';
-import { UserDocument } from '@jnscas/cy/src/domain/users/user.schema';
+import { MongoIdManager } from '@jnscas/cy/src/domain/mongo/MongoIdManager'
+import { UserDocument } from '@jnscas/cy/src/domain/users/user.schema'
 
 export class User {
   constructor(
@@ -9,7 +9,7 @@ export class User {
     public readonly telegramId?: string,
     public readonly lastEmailSync?: Date,
     public readonly googleAccessToken?: string,
-    public readonly googleRefreshToken?: string
+    public readonly googleRefreshToken?: string,
   ) {}
 
   static create(
@@ -18,7 +18,7 @@ export class User {
     telegramId?: string,
     lastEmailSync?: Date,
     googleAccessToken?: string,
-    googleRefreshToken?: string
+    googleRefreshToken?: string,
   ): User {
     return new User(
       MongoIdManager.randomId(),
@@ -27,8 +27,8 @@ export class User {
       telegramId,
       lastEmailSync,
       googleAccessToken,
-      googleRefreshToken
-    );
+      googleRefreshToken,
+    )
   }
 
   static restore(document: UserDocument): User {
@@ -39,12 +39,12 @@ export class User {
       document.telegramId,
       document.lastEmailSync,
       document.googleAccessToken,
-      document.googleRefreshToken
-    );
+      document.googleRefreshToken,
+    )
   }
 
   static restoreList(documents: UserDocument[]): User[] {
-    return documents.map(doc => User.restore(doc));
+    return documents.map((doc) => User.restore(doc))
   }
 
   toDocument(): Partial<UserDocument> {
@@ -54,7 +54,7 @@ export class User {
       autoExpenseEnabled: this.autoExpenseEnabled,
       lastEmailSync: this.lastEmailSync,
       googleAccessToken: this.googleAccessToken,
-      googleRefreshToken: this.googleRefreshToken
-    };
+      googleRefreshToken: this.googleRefreshToken,
+    }
   }
-} 
+}

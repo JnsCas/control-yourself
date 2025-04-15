@@ -1,32 +1,34 @@
-import { Context } from 'telegraf';
-import { ApiClient } from '../api/api.client';
-import logger from '../utils/logger';
+import { Context } from "telegraf";
+import { ApiClient } from "../api/api.client";
+import logger from "../utils/logger";
 
 export const startCommand = async (ctx: Context) => {
   if (!ctx.from) {
-    logger.error('Start command called without user context');
-    await ctx.reply('Error: Could not identify user');
+    logger.error("Start command called without user context");
+    await ctx.reply("Error: Could not identify user");
     return;
   }
 
-  logger.info('Start command received', {
+  logger.info("Start command received", {
     userId: ctx.from.id,
     username: ctx.from.username,
-    firstName: ctx.from.first_name
+    firstName: ctx.from.first_name,
   });
 
   const apiClient = new ApiClient();
-  
+
   try {
     let user = await apiClient.getUserByTelegramId(ctx.from.id.toString());
     if (user) {
-      await ctx.reply('You are already registered! Use /help to see available commands.');
+      await ctx.reply(
+        "You are already registered! Use /help to see available commands.",
+      );
       return;
     }
 
     user = await apiClient.createUser(
       ctx.from.id.toString(),
-      ctx.from.username || ctx.from.first_name
+      ctx.from.username || ctx.from.first_name,
     );
 
     const welcomeMessage = `
@@ -42,12 +44,17 @@ Use /help to see all available commands.
     `;
 
     await ctx.reply(welcomeMessage);
-    logger.info('Successfully completed start command', { userId: ctx.from.id, user });
-  } catch (error) {
-    logger.error('Error in start command', {
+    logger.info("Successfully completed start command", {
       userId: ctx.from.id,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      user,
     });
-    await ctx.reply('Sorry, there was an error setting up your account. Please try again later.');
+  } catch (error) {
+    logger.error("Error in start command", {
+      userId: ctx.from.id,
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+    await ctx.reply(
+      "Sorry, there was an error setting up your account. Please try again later.",
+    );
   }
-}; 
+};
