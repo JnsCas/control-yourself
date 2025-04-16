@@ -1,4 +1,4 @@
-import { ExpenseCurrency, ExpenseSource, ExpenseType } from '@jnscas/cy/src/domain/expenses/expense.types'
+import { ExpenseCurrency, ExpenseSource, ExpenseSourceType } from '@jnscas/cy/src/domain/expenses/expense.types'
 import { NestFastifyApplication } from '@nestjs/platform-fastify'
 import { initTestApp } from '@jnscas/cy/test/support/testApp'
 
@@ -19,7 +19,7 @@ describe('ExpensesController (e2e)', () => {
       amount: 100.5,
       merchant: 'Test Store',
       date: new Date().toISOString(),
-      type: ExpenseType.MANUAL,
+      type: ExpenseSourceType.MANUAL,
       source: ExpenseSource.WEB,
       currency: ExpenseCurrency.USD,
     }
@@ -125,6 +125,25 @@ describe('ExpensesController (e2e)', () => {
           )
         })
     })
+
+    it('should create an expense with installment', () => {
+      const expense = {
+        ...validExpense,
+        installment: { amount: 50.25, totalInstallments: 2 },
+      }
+
+      return app
+        .inject({
+          method: 'POST',
+          url: '/expenses',
+          body: expense,
+        })
+        .then((res) => {
+          expect(res.statusCode).toBe(201)
+          const payload = JSON.parse(res.payload)
+          expect(payload).toEqual(expect.objectContaining({ installment: { amount: 50.25, totalInstallments: 2 } }))
+        })
+    })
   })
 
   describe('GET /expenses/:userId/:year/:month', () => {
@@ -163,6 +182,56 @@ describe('ExpensesController (e2e)', () => {
               message: expect.arrayContaining(['year must be a number string', 'month must be a number string']),
               statusCode: 400,
               error: 'Bad Request',
+            }),
+          )
+        })
+    })
+
+    it('should return expenses with installment', async () => {
+      const userId = 'test-user-123-installment'
+      const date = new Date()
+      const year = date.getFullYear()
+      const month = date.getMonth() + 1
+
+      const body = {
+        userId,
+        amount: 100.5,
+        merchant: 'Test Store',
+        date: date.toISOString(),
+        type: ExpenseSourceType.MANUAL,
+        source: ExpenseSource.WEB,
+        currency: ExpenseCurrency.USD,
+        installment: { amount: 50.25, totalInstallments: 2 },
+      }
+
+      await app.inject({
+        method: 'POST',
+        url: '/expenses',
+        body,
+      })
+
+      return app
+        .inject({
+          method: 'GET',
+          url: `/expenses/${userId}/${year}/${month}`,
+        })
+        .then((res) => {
+          expect(res.statusCode).toBe(200)
+          const payload = JSON.parse(res.payload)
+          expect(Array.isArray(payload)).toBe(true)
+          expect(payload[0]).toEqual(
+            expect.objectContaining({
+              userId,
+              amount: body.amount,
+              merchant: body.merchant,
+              date: body.date,
+              type: body.type,
+              source: body.source,
+              currency: body.currency,
+              installment: {
+                amount: body.installment.amount,
+                totalInstallments: body.installment.totalInstallments,
+              },
             }),
           )
         })

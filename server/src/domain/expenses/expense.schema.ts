@@ -1,6 +1,17 @@
+import { ExpenseCurrency, ExpenseSource, ExpenseSourceType } from '@jnscas/cy/src/domain/expenses/expense.types'
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { Document, Schema as MongooseSchema } from 'mongoose'
-import { ExpenseCurrency, ExpenseSource, ExpenseType } from '@jnscas/cy/src/domain/expenses/expense.types'
+
+class InstallmentDocument {
+  @Prop({ required: true, type: Number })
+  installmentNumber: number
+
+  @Prop({ required: true, type: Number })
+  amount: number
+
+  @Prop({ required: true, type: Date })
+  dueDate: Date
+}
 
 @Schema({ timestamps: true })
 class Expense {
@@ -16,8 +27,8 @@ class Expense {
   @Prop({ required: true, type: Date })
   date: Date
 
-  @Prop({ required: true, enum: ExpenseType })
-  type: ExpenseType
+  @Prop({ required: true, enum: ExpenseSourceType })
+  sourceType: ExpenseSourceType
 
   @Prop({ required: true, enum: ExpenseSource })
   source: ExpenseSource
@@ -36,6 +47,9 @@ class Expense {
 
   @Prop({ type: MongooseSchema.Types.String })
   emailId?: string
+
+  @Prop({ type: [InstallmentDocument] })
+  installments: InstallmentDocument[]
 }
 
 export type ExpenseDocument = Expense & Document

@@ -16,14 +16,29 @@ export class ExpenseRepository {
   async findByMonth(userId: string, startDate: Date, endDate: Date): Promise<Expense[]> {
     const results = await this.expenseModel
       .find({
-        userId,
-        date: {
-          $gte: startDate,
-          $lte: endDate,
-        },
+        userId: userId,
+        $or: [
+          {
+            date: {
+              $gte: startDate,
+              $lte: endDate,
+            },
+          },
+          {
+            installments: {
+              $elemMatch: {
+                dueDate: {
+                  $gte: startDate,
+                  $lte: endDate,
+                },
+              },
+            },
+          },
+        ],
       })
       .sort({ date: -1 })
       .exec()
+
     return Expense.restoreList(results)
   }
 

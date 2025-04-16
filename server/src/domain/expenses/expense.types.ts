@@ -3,7 +3,7 @@ export enum ExpenseCurrency {
   USD = 'USD',
 }
 
-export enum ExpenseType {
+export enum ExpenseSourceType {
   AUTO = 'AUTO',
   MANUAL = 'MANUAL',
 }

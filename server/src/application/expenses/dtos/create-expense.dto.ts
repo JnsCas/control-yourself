@@ -1,5 +1,5 @@
 import { ExpenseCurrency, ExpenseSource } from '@jnscas/cy/src/domain/expenses/expense.types'
-import { IsDateString, IsEnum, IsNumber, IsString } from 'class-validator'
+import { IsDateString, IsEnum, IsNumber, IsOptional, IsString, Min } from 'class-validator'
 
 export class CreateExpenseDto {
   @IsString()
@@ -19,4 +19,9 @@ export class CreateExpenseDto {
 
   @IsEnum(ExpenseCurrency)
   currency: ExpenseCurrency
+
+  @IsNumber()
+  @Min(2)
+  @IsOptional()
+  installmentsTotal?: number
 }

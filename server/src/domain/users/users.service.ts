@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { EmailParser } from '@jnscas/cy/src/domain/email/email.parser'
-import { ExpenseSource, ExpenseType } from '@jnscas/cy/src/domain/expenses/expense.types'
+import { ExpenseSource, ExpenseSourceType } from '@jnscas/cy/src/domain/expenses/expense.types'
 import { ExpensesService } from '@jnscas/cy/src/domain/expenses/expenses.service'
 import { GmailService } from '@jnscas/cy/src/domain/gmail/gmail.service'
 import { User } from '@jnscas/cy/src/domain/users/entities/user.entity'
@@ -37,9 +37,10 @@ export class UsersService {
         parsedEmail.amount,
         parsedEmail.merchant,
         new Date(parsedEmail.date),
-        ExpenseType.AUTO,
+        ExpenseSourceType.AUTO,
         ExpenseSource.GMAIL,
         parsedEmail.currency,
+        undefined,
         parsedEmail.cardNumber,
         parsedEmail.id,
       )

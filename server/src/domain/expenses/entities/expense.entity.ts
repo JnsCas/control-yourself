@@ -1,6 +1,7 @@
 import { ExpenseDocument } from '@jnscas/cy/src/domain/expenses/expense.schema'
-import { ExpenseCurrency, ExpenseSource, ExpenseType } from '@jnscas/cy/src/domain/expenses/expense.types'
+import { ExpenseCurrency, ExpenseSource, ExpenseSourceType } from '@jnscas/cy/src/domain/expenses/expense.types'
 import { MongoIdManager } from '@jnscas/cy/src/domain/mongo/MongoIdManager'
+import { Installment } from '@jnscas/cy/src/domain/expenses/entities/installment.entity'
 
 export class Expense {
   constructor(
@@ -9,11 +10,12 @@ export class Expense {
     readonly amount: number,
     readonly merchant: string,
     readonly date: Date,
-    readonly type: ExpenseType,
+    readonly sourceType: ExpenseSourceType,
     readonly createdAt: Date,
     readonly updatedAt: Date,
     readonly source: ExpenseSource,
     readonly currency: ExpenseCurrency,
+    readonly installments: Installment[],
     readonly cardNumber?: string,
     readonly emailId?: string,
   ) {}
@@ -23,23 +25,34 @@ export class Expense {
     amount: number,
     merchant: string,
     date: Date,
-    type: ExpenseType,
+    sourceType: ExpenseSourceType,
     source: ExpenseSource,
     currency: ExpenseCurrency,
+    installmentsTotal?: number,
     cardNumber?: string,
     emailId?: string,
   ): Expense {
+    const installments = []
+    if (installmentsTotal) {
+      const installmentAmount = amount / installmentsTotal
+      for (let i = 0; i < installmentsTotal; i++) {
+        const dueDate = new Date(date)
+        dueDate.setMonth(dueDate.getMonth() + i)
+        installments.push(Installment.create(i + 1, installmentAmount, dueDate))
+      }
+    }
     return new Expense(
       MongoIdManager.randomId(),
       userId,
       amount,
       merchant,
       date,
-      type,
+      sourceType,
       new Date(),
       new Date(),
       source,
       currency,
+      installments,
       cardNumber,
       emailId,
     )
@@ -52,11 +65,12 @@ export class Expense {
       document.amount,
       document.merchant,
       document.date,
-      document.type,
+      document.sourceType,
       document.createdAt,
       document.updatedAt,
       document.source,
       document.currency,
+      document.installments.map(Installment.restore),
       document.cardNumber,
       document.emailId,
     )
@@ -72,13 +86,14 @@ export class Expense {
       amount: this.amount,
       merchant: this.merchant,
       date: this.date,
-      type: this.type,
+      sourceType: this.sourceType,
       source: this.source,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       currency: this.currency,
       cardNumber: this.cardNumber,
       emailId: this.emailId,
+      installments: this.installments,
     }
   }
 }
