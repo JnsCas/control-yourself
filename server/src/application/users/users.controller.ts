@@ -1,18 +1,13 @@
-import { Controller, Post, Body, Get, Param, NotFoundException, BadRequestException } from '@nestjs/common'
-import { UsersService } from '@jnscas/cy/src/domain/users/users.service'
-import { GmailService } from '@jnscas/cy/src/domain/gmail/gmail.service'
-import { Logger } from '@nestjs/common'
-import { User } from '@jnscas/cy/src/domain/users/entities/user.entity'
 import { CreateUserDto } from '@jnscas/cy/src/application/users/dtos/create-user.dto'
+import { User } from '@jnscas/cy/src/domain/users/entities/user.entity'
+import { UsersService } from '@jnscas/cy/src/domain/users/users.service'
+import { BadRequestException, Body, Controller, Get, Logger, NotFoundException, Param, Post } from '@nestjs/common'
 
 @Controller('users')
 export class UsersController {
   private readonly logger = new Logger(UsersController.name)
 
-  constructor(
-    private readonly usersService: UsersService,
-    private readonly gmailService: GmailService,
-  ) {}
+  constructor(private readonly usersService: UsersService) {}
 
   @Post()
   async createUser(@Body() createUserDto: CreateUserDto) {

@@ -1,17 +1,17 @@
-import { Controller, Get, Query, Res } from '@nestjs/common'
-import { Response } from 'express'
+import { Controller, Query, Get, Res } from '@nestjs/common'
 import { OAuth2Client } from 'google-auth-library'
+import { FastifyReply } from 'fastify'
 import { UsersService } from '@jnscas/cy/src/domain/users/users.service'
 
 @Controller('auth')
-export class AuthController {
+export class OAuth2Controller {
   constructor(
     private readonly oAuth2Client: OAuth2Client,
     private readonly usersService: UsersService,
   ) {}
 
   @Get('login')
-  async login(@Query('telegramId') telegramId: string, @Res() res: Response) {
+  async login(@Query('telegramId') telegramId: string, @Res() res: FastifyReply) {
     const authUrl = this.oAuth2Client.generateAuthUrl({
       access_type: 'offline',
       scope: ['https://www.googleapis.com/auth/gmail.readonly'],
@@ -19,7 +19,7 @@ export class AuthController {
       state: telegramId,
     })
 
-    res.redirect(authUrl)
+    return res.redirect(authUrl)
   }
 
   @Get('callback')

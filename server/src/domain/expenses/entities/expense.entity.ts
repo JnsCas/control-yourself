@@ -76,8 +76,22 @@ export class Expense {
     )
   }
 
-  static restoreList(documents: ExpenseDocument[]): Expense[] {
-    return documents.map((document) => this.restore(document))
+  updateInstallments(installmentsTotal: number): Expense {
+    return new Expense(
+      this.id,
+      this.userId,
+      this.amount,
+      this.merchant,
+      this.date,
+      this.sourceType,
+      this.createdAt,
+      new Date(),
+      this.source,
+      this.currency,
+      this.createInstallments(installmentsTotal),
+      this.cardNumber,
+      this.emailId,
+    )
   }
 
   toDocument(): Partial<ExpenseDocument> {
@@ -95,5 +109,15 @@ export class Expense {
       emailId: this.emailId,
       installments: this.installments,
     }
+  }
+
+  private createInstallments(installmentsTotal: number): Installment[] {
+    const installments = []
+    for (let i = 0; i < installmentsTotal; i++) {
+      const dueDate = new Date(this.date)
+      dueDate.setMonth(dueDate.getMonth() + i)
+      installments.push(Installment.create(i + 1, this.amount / installmentsTotal, dueDate))
+    }
+    return installments
   }
 }

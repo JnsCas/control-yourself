@@ -94,6 +94,18 @@ export class ApiClient {
     }
   }
 
+  async updateExpense(expenseId: string, updateData: { installmentsTotal: number }) {
+    logger.info('Updating expense', { expenseId, installmentsTotal: updateData.installmentsTotal })
+    try {
+      const response = await this.httpClient.put(`/expenses/${expenseId}`, updateData)
+      logger.info('Successfully updated expense', { expenseId })
+      return response.data
+    } catch (error) {
+      logger.error('Failed to update expense', { expenseId, error })
+      throw error
+    }
+  }
+
   async syncEmails(userId: string) {
     logger.info('Syncing emails', { userId })
     try {

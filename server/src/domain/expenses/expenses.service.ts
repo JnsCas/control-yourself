@@ -1,6 +1,6 @@
 import { Expense } from '@jnscas/cy/src/domain/expenses/entities/expense.entity'
 import { ExpenseRepository } from '@jnscas/cy/src/domain/expenses/expense.repository'
-import { Injectable, Logger } from '@nestjs/common'
+import { Injectable, Logger, NotFoundException } from '@nestjs/common'
 
 @Injectable()
 export class ExpensesService {
@@ -22,15 +22,20 @@ export class ExpensesService {
 
     this.logger.debug(`Date range: ${startDate.toISOString()} to ${endDate.toISOString()}`)
 
-    const expenses = await this.expenseRepository.findByMonth(userId, startDate, endDate)
+    const expenses = await this.expenseRepository.findByDateRange(userId, startDate, endDate)
     this.logger.debug(`Found ${expenses.length} expenses`)
     return expenses
   }
 
-  async getTotalExpensesByMonth(userId: string, year: number, month: number): Promise<number> {
-    const startDate = new Date(year, month - 1, 1)
-    const endDate = new Date(year, month, 0)
+  async updateExpense(expenseId: string, installmentsTotal: number): Promise<Expense> {
+    this.logger.debug(`Updating expense ${expenseId}`, installmentsTotal)
 
-    return this.expenseRepository.getTotalByMonth(userId, startDate, endDate)
+    const expense = await this.expenseRepository.findById(expenseId)
+    if (!expense) {
+      this.logger.warn(`Expense not found: ${expenseId}`)
+      throw new NotFoundException(`Expense with ID ${expenseId} not found`)
+    }
+
+    return this.expenseRepository.update(expense.updateInstallments(installmentsTotal))
   }
 }

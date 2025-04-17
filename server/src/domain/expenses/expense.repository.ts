@@ -13,7 +13,17 @@ export class ExpenseRepository {
     return expense
   }
 
-  async findByMonth(userId: string, startDate: Date, endDate: Date): Promise<Expense[]> {
+  async findById(id: string): Promise<Expense | null> {
+    const document = await this.expenseModel.findById(id).exec()
+    return document ? Expense.restore(document) : null
+  }
+
+  async update(expense: Expense): Promise<Expense> {
+    await this.expenseModel.findByIdAndUpdate(expense.id, { $set: { ...expense.toDocument() } }).exec()
+    return expense
+  }
+
+  async findByDateRange(userId: string, startDate: Date, endDate: Date): Promise<Expense[]> {
     const results = await this.expenseModel
       .find({
         userId: userId,
@@ -39,28 +49,6 @@ export class ExpenseRepository {
       .sort({ date: -1 })
       .exec()
 
-    return Expense.restoreList(results)
-  }
-
-  async getTotalByMonth(userId: string, startDate: Date, endDate: Date): Promise<number> {
-    const result = await this.expenseModel.aggregate([
-      {
-        $match: {
-          userId,
-          date: {
-            $gte: startDate,
-            $lte: endDate,
-          },
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          total: { $sum: '$amount' },
-        },
-      },
-    ])
-
-    return result[0]?.total || 0
+    return results.map(Expense.restore)
   }
 }

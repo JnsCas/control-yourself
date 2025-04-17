@@ -150,7 +150,7 @@ async function showSummary(ctx: any, date: Date) {
       return
     }
 
-    // Calculate total
+    // Calculate total FIXME installments
     const total = expenses.reduce((sum: number, expense: any) => sum + expense.amount, 0)
 
     // Group expenses by merchant
@@ -159,7 +159,7 @@ async function showSummary(ctx: any, date: Date) {
 
     expenses.forEach((expense: any) => {
       const merchant = expense.merchant
-      const amount = expense.amount
+      const amount = getAmount(expense, month, year)
 
       // Split merchant name by '*' or space
       const parts = merchant.split(/[*\s]/)
@@ -217,15 +217,6 @@ async function showSummary(ctx: any, date: Date) {
       })
 
     await ctx.reply(message, { parse_mode: 'Markdown' })
-    logger.info('Successfully sent expense summary', {
-      userId: ctx.from.id,
-      year,
-      month,
-      dateString: date.toISOString(),
-      totalExpenses: expenses.length,
-      totalAmount: total,
-      merchantCount: Object.keys(byMerchant).length,
-    })
   } catch (error) {
     logger.error('Error fetching expenses for summary', {
       userId: ctx.from.id,
@@ -240,4 +231,15 @@ async function showSummary(ctx: any, date: Date) {
     ctx.session.summaryState = undefined
     logger.info('Summary session cleared', { userId: ctx.from.id })
   }
+}
+
+const getAmount = (expense: any, month: number, year: number) => {
+  if (expense.installments) {
+    const installment = expense.installments.find((installment: any) => {
+      const installmentDate = new Date(installment.dueDate)
+      return installmentDate.getMonth() + 1 === month && installmentDate.getFullYear() === year
+    })
+    return installment?.amount || expense.amount
+  }
+  return expense.amount
 }

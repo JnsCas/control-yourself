@@ -17,9 +17,10 @@ export const helpCommand = async (ctx: Context) => {
 Available commands:
 /start - Start the bot
 /help - Show this help message
-/latest - Show recent transactions
-/stats - Show monthly statistics
-/settings - Configure your preferences
+/new - Create a new expense
+/summary - View monthly expense summaries
+/update_expense - Update an expense to add installments
+/login - Connect your account
   `
     await ctx.reply(helpMessage)
     logger.info('Successfully sent help message', { userId: ctx.from.id })
