@@ -2,16 +2,14 @@ import { Injectable } from '@nestjs/common'
 import { OAuth2Client } from 'google-auth-library'
 import { google } from 'googleapis'
 import { gmail_v1 } from 'googleapis/build/src/apis/gmail'
-import { GmailClientAbstract } from '@jnscas/cy/src/domain/gmail/gmail.client.abstract'
 import { User } from '@jnscas/cy/src/domain/users/entities/user.entity'
 import { GetMessageResponse } from '@jnscas/cy/src/domain/gmail/responses/get-message.response'
 
 @Injectable()
-export class GmailClient extends GmailClientAbstract {
+export class GmailClient {
   private readonly gmail: gmail_v1.Gmail
 
   constructor(private readonly oauth2Client: OAuth2Client) {
-    super()
     this.gmail = google.gmail({ version: 'v1', auth: this.oauth2Client })
   }
 
