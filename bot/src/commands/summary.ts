@@ -150,8 +150,7 @@ async function showSummary(ctx: any, date: Date) {
       return
     }
 
-    // Calculate total FIXME installments
-    const total = expenses.reduce((sum: number, expense: any) => sum + expense.amount, 0)
+    const total = getTotal(expenses, month, year)
 
     // Group expenses by merchant
     const byMerchant: { [key: string]: number } = {}
@@ -185,7 +184,7 @@ async function showSummary(ctx: any, date: Date) {
 
     // Create summary message
     let message = `*📊 Expenses Summary for ${date.toLocaleString('default', { month: 'long', year: 'numeric' })}*\n\n`
-    message += `*Total:* $${total}\n\n`
+    message += `*Total:* $${total.toFixed(2)}\n\n`
     message += `*Breakdown by merchant:*\n`
 
     // Sort prefixes by total amount
@@ -200,17 +199,22 @@ async function showSummary(ctx: any, date: Date) {
         if (subItemKeys.length <= 1) {
           const suffix = subItemKeys[0] || ''
           const fullName = suffix ? `${prefix} ${suffix}` : prefix
-          message += `\n*${fullName}:* $${totalAmount} (${percentage}%)\n`
+
+          const installmentText = getInstallmentInfo(expenses, fullName, month, year)
+          message += `\n*${fullName}:* $${totalAmount.toFixed(2)} (${percentage}%)${installmentText}\n`
         } else {
           // Show hierarchical structure for multiple sub-items
-          message += `\n*${prefix}:* $${totalAmount} (${percentage}%)\n`
+          message += `\n*${prefix}:* $${totalAmount.toFixed(2)} (${percentage}%)\n`
           Object.entries(subItems)
             .sort((a, b) => b[1] - a[1])
             .forEach(([suffix, amount]) => {
               if (suffix) {
                 // Only show if there's a suffix
                 const subPercentage = ((amount / totalAmount) * 100).toFixed(1)
-                message += `  └─ ${suffix}: $${amount} (${subPercentage}%)\n`
+                const fullMerchant = `${prefix} ${suffix}`
+
+                const installmentText = getInstallmentInfo(expenses, fullMerchant, month, year)
+                message += `  └─ ${suffix}: $${amount.toFixed(2)} (${subPercentage}%)${installmentText}\n`
               }
             })
         }
@@ -233,13 +237,38 @@ async function showSummary(ctx: any, date: Date) {
   }
 }
 
+const getTotal = (expenses: any[], month: number, year: number) => {
+  return expenses.reduce((sum: number, expense: any) => sum + getAmount(expense, month, year), 0)
+}
+
 const getAmount = (expense: any, month: number, year: number) => {
   if (expense.installments) {
-    const installment = expense.installments.find((installment: any) => {
-      const installmentDate = new Date(installment.dueDate)
-      return installmentDate.getMonth() + 1 === month && installmentDate.getFullYear() === year
-    })
+    const installment = expense.installments.find((installment: any) =>
+      isSameMonthAndYear(installment.dueDate, month, year),
+    )
     return installment?.amount || expense.amount
   }
   return expense.amount
+}
+
+// Get installment information for a specific merchant
+const getInstallmentInfo = (expenses: any[], merchantName: string, month: number, year: number) => {
+  const expense = expenses.find((expense: any) => {
+    const expMerchant = expense.merchant.trim()
+    return expMerchant === merchantName && expense.installments
+  })
+
+  if (!expense?.installments) return ''
+
+  const currentInstallment =
+    expense.installments.findIndex((installment: any) => isSameMonthAndYear(installment.dueDate, month, year)) + 1
+
+  if (currentInstallment <= 0) return ''
+
+  return ` [${currentInstallment}/${expense.installments.length}]`
+}
+
+const isSameMonthAndYear = (dateString: string, month: number, year: number) => {
+  const date = new Date(dateString)
+  return date.getMonth() + 1 === month && date.getFullYear() === year
 }

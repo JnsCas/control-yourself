@@ -23,6 +23,13 @@ export class ExpenseRepository {
     return expense
   }
 
+  /**
+   * Find expenses by date range, including installments
+   * @param userId - User ID
+   * @param startDate - Start date
+   * @param endDate - End date
+   * @returns Expenses
+   */
   async findByDateRange(userId: string, startDate: Date, endDate: Date): Promise<Expense[]> {
     const results = await this.expenseModel
       .find({
