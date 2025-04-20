@@ -1,6 +1,6 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { ImapModule } from './imap/imap.module';
+import { Module } from '@nestjs/common'
+import { ConfigModule } from '@nestjs/config'
+import { ImapModule } from './imap/imap.module'
 
 @Module({
   imports: [
@@ -10,4 +10,4 @@ import { ImapModule } from './imap/imap.module';
     ImapModule,
   ],
 })
-export class AppModule {} 
+export class AppModule {}

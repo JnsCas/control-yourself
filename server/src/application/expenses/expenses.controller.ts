@@ -1,40 +1,54 @@
-import { Body, Controller, Get, Logger, Param, Post, Query } from '@nestjs/common';
-import { ExpensesService } from '@jnscas/cy/src/domain/expenses/expenses.service';
-import { CreateExpenseDto } from "@jnscas/cy/src/domain/expenses/types/expense.types";
+import { CreateExpenseDto } from '@jnscas/cy/src/application/expenses/dtos/create-expense.dto'
+import { GetExpensesByMonthDto } from '@jnscas/cy/src/application/expenses/dtos/get-expenses-by-month.dto'
+import { UpdateExpenseDto } from '@jnscas/cy/src/application/expenses/dtos/update-expense.dto'
+import { Expense } from '@jnscas/cy/src/domain/expenses/entities/expense.entity'
+import { ExpenseSourceType } from '@jnscas/cy/src/domain/expenses/expense.types'
+import { ExpensesService } from '@jnscas/cy/src/domain/expenses/expenses.service'
+import { Body, Controller, Get, Logger, Param, Post, Put } from '@nestjs/common'
 
 @Controller('expenses')
 export class ExpensesController {
-  private readonly logger = new Logger(ExpensesController.name);
+  private readonly logger = new Logger(ExpensesController.name)
 
   constructor(private readonly expensesService: ExpensesService) {}
 
   @Post()
   async createExpense(@Body() createExpenseDto: CreateExpenseDto) {
-    this.logger.log(`Creating expense for user ${createExpenseDto.userId} - Amount: $${createExpenseDto.amount}, Merchant: ${createExpenseDto.merchant}`);
-    try {
-      const expense = await this.expensesService.create(createExpenseDto);
-      this.logger.log(`Expense created successfully`);
-      return expense;
-    } catch (error) {
-      this.logger.error(`Error creating expense: ${error.message}`, error.stack);
-      throw error;
-    }
+    this.logger.log(
+      `Creating expense for user ${createExpenseDto.userId} - Amount: $${createExpenseDto.amount}, Merchant: ${createExpenseDto.merchant}`,
+    )
+    const { userId, amount, merchant, date, source, currency, installmentsTotal } = createExpenseDto
+    const expense = Expense.create(
+      userId,
+      amount,
+      merchant,
+      new Date(date),
+      ExpenseSourceType.MANUAL,
+      source,
+      currency,
+      installmentsTotal,
+    )
+    const savedExpense = await this.expensesService.create(expense)
+    this.logger.log(`Expense created successfully`)
+    return savedExpense
   }
 
   @Get(':userId/:year/:month')
-  async getExpensesByMonth(
-    @Param('userId') userId: string,
-    @Param('year') year: number,
-    @Param('month') month: number
-  ) {
-    this.logger.log(`Fetching expenses for user ${userId} - Month: ${month}, Year: ${year}`);
-    try {
-      const expenses = await this.expensesService.getExpensesByMonth(userId, month, year);
-      this.logger.log(`Found ${expenses.length} expenses`);
-      return expenses;
-    } catch (error) {
-      this.logger.error(`Error fetching expenses: ${error.message}`, error.stack);
-      throw error;
-    }
+  async getExpensesByMonth(@Param() params: GetExpensesByMonthDto) {
+    this.logger.log(`Fetching expenses for user ${params.userId} - Month: ${params.month}, Year: ${params.year}`)
+    const expenses = await this.expensesService.getExpensesByMonth(params.userId, params.month, params.year)
+    this.logger.log(`Found ${expenses.length} expenses`)
+    return expenses
   }
-} 
+
+  @Put(':id')
+  async updateExpense(@Param('id') id: string, @Body() updateExpenseDto: UpdateExpenseDto) {
+    const { installmentsTotal } = updateExpenseDto
+    this.logger.log(`Updating expense ${id} with installments: ${installmentsTotal}`)
+
+    const updatedExpense = await this.expensesService.updateExpense(id, installmentsTotal)
+
+    this.logger.log(`Expense updated successfully`)
+    return updatedExpense
+  }
+}

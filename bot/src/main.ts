@@ -1,63 +1,86 @@
-import * as dotenv from 'dotenv';
-import { Telegraf, session } from 'telegraf';
-import { helpCommand, startCommand, loginCommand } from './commands';
-import { newExpenseCommand, handleAmountSelection, handleDateSelection, handleMerchantSelection, handleCustomAmount, handleCustomMerchant, handleCustomDate } from './commands/new-expense';
-import { summaryCommand, handleSummarySelection, handleCustomMonth } from './commands/summary';
-import logger from './utils/logger';
+import * as dotenv from 'dotenv'
+import { Telegraf, session } from 'telegraf'
+import * as help from './commands/help'
+import * as start from './commands/start'
+import * as login from './commands/login'
+import * as newExpense from './commands/new-expense'
+import * as summaryCommand from './commands/summary'
+import * as updateExpense from './commands/update-expense'
+import logger from './utils/logger'
 
-logger.info('Starting bot initialization...');
+logger.info('Starting bot initialization...')
 
-dotenv.config();
+dotenv.config()
 
 if (!process.env.BOT_TOKEN) {
-  logger.error('BOT_TOKEN environment variable is missing');
-  throw new Error('BOT_TOKEN must be provided!');
+  logger.error('BOT_TOKEN environment variable is missing')
+  throw new Error('BOT_TOKEN must be provided!')
 }
 
-logger.info('BOT_TOKEN found, creating Telegraf instance...');
+logger.info('BOT_TOKEN found, creating Telegraf instance...')
 
-const bot = new Telegraf(process.env.BOT_TOKEN);
+const bot = new Telegraf(process.env.BOT_TOKEN)
 
-// Add session middleware
-bot.use(session());
-logger.info('Session middleware added');
+// Add session middleware with better persistence
+bot.use(
+  session({
+    getSessionKey: (ctx) => {
+      if (ctx.from) {
+        return `user:${ctx.from.id}`
+      }
+      return undefined
+    },
+  }),
+)
+logger.info('Session middleware added with enhanced configuration')
 
 // Register commands
-bot.command('start', startCommand);
-bot.command('help', helpCommand);
-bot.command('new', newExpenseCommand);
-bot.command('login', loginCommand);
-bot.command('summary', summaryCommand);
-logger.info('All commands registered');
+bot.command('start', start.startCommand)
+bot.command('help', help.helpCommand)
+bot.command('new', newExpense.newExpenseCommand)
+bot.command('login', login.loginCommand)
+bot.command('summary', summaryCommand.summaryCommand)
+bot.command('update_expense', updateExpense.updateExpenseCommand)
+logger.info('All commands registered')
 
 // Callback queries for inline keyboards
-bot.action(/^amount_/, handleAmountSelection);
-bot.action(/^merchant_/, handleMerchantSelection);
-bot.action(/^date_/, handleDateSelection);
-bot.action(/^summary_/, handleSummarySelection);
-logger.info('All callback handlers registered');
+bot.action(/^amount_/, newExpense.handleAmountSelection)
+bot.action(/^merchant_/, newExpense.handleMerchantSelection)
+bot.action(/^date_/, newExpense.handleDateSelection)
+bot.action(/^summary_/, summaryCommand.handleSummarySelection)
+bot.action(/^update_month_/, updateExpense.handleUpdateMonthSelection)
+bot.action(/^update_select_/, updateExpense.handleExpenseSelection)
+bot.action(/^update_page_/, updateExpense.handlePageNavigation)
+bot.action('update_cancel', updateExpense.handleCancel)
+logger.info('All callback handlers registered')
 
 // Handle custom amount input
 bot.hears(/^\d+(\.\d{1,2})?$/, async (ctx: any) => {
-  if (!ctx.from) return;
+  if (!ctx.from) return
   if (ctx.session?.expenseState === 'amount') {
-    await handleCustomAmount(ctx);
+    await newExpense.handleCustomAmount(ctx)
+  } else if (ctx.session?.updateExpenseState === 'entering_installments') {
+    await updateExpense.handleInstallmentsInput(ctx)
   }
-});
+})
 
 // Handle custom merchant, date, and month input
 bot.hears(/^.+$/, async (ctx: any) => {
-  if (!ctx.from) return;
-  
+  if (!ctx.from) return
+
   if (ctx.session?.expenseState === 'merchant') {
-    await handleCustomMerchant(ctx);
+    await newExpense.handleCustomMerchant(ctx)
   } else if (ctx.session?.expenseState === 'date') {
-    await handleCustomDate(ctx);
+    await newExpense.handleCustomDate(ctx)
   } else if (ctx.session?.summaryState === 'awaiting_month') {
-    await handleCustomMonth(ctx);
+    await summaryCommand.handleCustomMonth(ctx)
+  } else if (ctx.session?.updateExpenseState === 'entering_month') {
+    await updateExpense.handleCustomUpdateMonth(ctx)
+  } else if (ctx.session?.updateExpenseState === 'entering_installments') {
+    await updateExpense.handleInstallmentsInput(ctx)
   }
-});
-logger.info('All message handlers registered');
+})
+logger.info('All message handlers registered')
 
 // Error handling
 bot.catch((err, ctx) => {
@@ -65,32 +88,33 @@ bot.catch((err, ctx) => {
     error: err,
     updateType: ctx.updateType,
     userId: ctx.from?.id,
-    username: ctx.from?.username
-  });
-  ctx.reply('Oops! Something went wrong. Please try again later.');
-});
+    username: ctx.from?.username,
+  })
+  ctx.reply('Oops! Something went wrong. Please try again later.')
+})
 
 // Start bot
-logger.info('Attempting to launch bot...');
-bot.launch()
+logger.info('Attempting to launch bot...')
+bot
+  .launch()
   .then(() => {
-    logger.info('Bot started successfully');
-    logger.info('Bot is now listening for messages');
+    logger.info('Bot started successfully')
+    logger.info('Bot is now listening for messages')
   })
   .catch((err) => {
-    logger.error('Bot launch failed', { 
+    logger.error('Bot launch failed', {
       error: err,
       errorMessage: err.message,
-      errorStack: err.stack 
-    });
-  });
+      errorStack: err.stack,
+    })
+  })
 
 // Enable graceful stop
 process.once('SIGINT', () => {
-  logger.info('Received SIGINT signal');
-  bot.stop('SIGINT');
-});
+  logger.info('Received SIGINT signal')
+  bot.stop('SIGINT')
+})
 process.once('SIGTERM', () => {
-  logger.info('Received SIGTERM signal');
-  bot.stop('SIGTERM');
-}); 
+  logger.info('Received SIGTERM signal')
+  bot.stop('SIGTERM')
+})
