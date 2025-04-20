@@ -6,8 +6,8 @@
     "test": "test"
   },
   "scripts": {
-    "lint": "eslint \"{server,bot,mock-services}/**/*.ts\" --fix",
-    "format": "prettier --write \"server/**/*.ts\"",
+    "lint": "eslint \"{server,bot}/**/*.ts\" --fix",
+    "format": "prettier --write \"server/**/*.ts\" \"bot/**/*.ts\"",
     "prepare": "husky"
   },
   "repository": {
