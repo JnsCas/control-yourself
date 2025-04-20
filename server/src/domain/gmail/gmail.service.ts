@@ -1,13 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { GmailClientAbstract } from '@jnscas/cy/src/domain/gmail/gmail.client.abstract'
 import { GetMessageResponse } from '@jnscas/cy/src/domain/gmail/responses/get-message.response'
 import { User } from '@jnscas/cy/src/domain/users/entities/user.entity'
+import { GmailClient } from '@jnscas/cy/src/domain/gmail/gmail.client'
 
 @Injectable()
 export class GmailService {
   private readonly logger = new Logger(GmailService.name)
 
-  constructor(private readonly gmailClient: GmailClientAbstract) {}
+  constructor(private readonly gmailClient: GmailClient) {}
 
   /**
    * Fetches new emails ids since the last sync date

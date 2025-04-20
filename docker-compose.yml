@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   mongodb:
     image: mongo:4.4
@@ -18,7 +16,7 @@ services:
     command: sh -c "/wait && cd /app/server && npx ts-node-dev -r tsconfig-paths/register --inspect=0.0.0.0:1339 -P ./tsconfig.json src/main.ts"
     environment:
       - SERVER_PORT=3000
-      - NODE_ENV=production
+      - NODE_ENV
       - EMAIL_FROM=${EMAIL_FROM}
       - EMAIL_SUBJECT=${EMAIL_SUBJECT}
       - MONGODB_URI=mongodb://mongodb:27017/control-yourself
@@ -39,7 +37,7 @@ services:
       dockerfile: Dockerfile
     command: sh -c "cd /app && npm run watch"
     environment:
-      - NODE_ENV=development
+      - NODE_ENV
       - BOT_TOKEN
       - API_URL=http://server:3000
     volumes:
