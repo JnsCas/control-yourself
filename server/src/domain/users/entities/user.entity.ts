@@ -8,8 +8,8 @@ export class User {
     public readonly autoExpenseEnabled: boolean,
     public readonly telegramId?: string,
     public readonly lastEmailSync?: Date,
-    public readonly googleAccessToken?: string,
-    public readonly googleRefreshToken?: string,
+    public readonly encryptedGoogleAccessToken?: string,
+    public readonly encryptedGoogleRefreshToken?: string,
   ) {}
 
   static create(
@@ -17,8 +17,8 @@ export class User {
     autoExpenseEnabled: boolean,
     telegramId?: string,
     lastEmailSync?: Date,
-    googleAccessToken?: string,
-    googleRefreshToken?: string,
+    encryptedGoogleAccessToken?: string,
+    encryptedGoogleRefreshToken?: string,
   ): User {
     return new User(
       MongoIdManager.randomId(),
@@ -26,8 +26,8 @@ export class User {
       autoExpenseEnabled,
       telegramId,
       lastEmailSync,
-      googleAccessToken,
-      googleRefreshToken,
+      encryptedGoogleAccessToken,
+      encryptedGoogleRefreshToken,
     )
   }
 
@@ -38,8 +38,8 @@ export class User {
       document.autoExpenseEnabled,
       document.telegramId,
       document.lastEmailSync,
-      document.googleAccessToken,
-      document.googleRefreshToken,
+      document.encryptedGoogleAccessToken,
+      document.encryptedGoogleRefreshToken,
     )
   }
 
@@ -53,8 +53,8 @@ export class User {
       username: this.username,
       autoExpenseEnabled: this.autoExpenseEnabled,
       lastEmailSync: this.lastEmailSync,
-      googleAccessToken: this.googleAccessToken,
-      googleRefreshToken: this.googleRefreshToken,
+      encryptedGoogleAccessToken: this.encryptedGoogleAccessToken,
+      encryptedGoogleRefreshToken: this.encryptedGoogleRefreshToken,
     }
   }
 }

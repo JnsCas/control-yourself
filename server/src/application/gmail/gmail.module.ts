@@ -3,9 +3,10 @@ import { GmailService } from '@jnscas/cy/src/domain/gmail/gmail.service'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { OAuth2Module } from '@jnscas/cy/src/application/oauth2/oauth2.module'
+import { EncryptionModule } from '@jnscas/cy/src/infrastructure/encryption/encryption.module'
 
 @Module({
-  imports: [ConfigModule, OAuth2Module],
+  imports: [ConfigModule, OAuth2Module, EncryptionModule],
   providers: [GmailService, GmailClient],
   exports: [GmailService],
 })

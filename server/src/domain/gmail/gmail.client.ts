@@ -4,12 +4,16 @@ import { google } from 'googleapis'
 import { gmail_v1 } from 'googleapis/build/src/apis/gmail'
 import { User } from '@jnscas/cy/src/domain/users/entities/user.entity'
 import { GetMessageResponse } from '@jnscas/cy/src/domain/gmail/responses/get-message.response'
+import { TokenEncryptionService } from '@jnscas/cy/src/infrastructure/encryption/token-encryption.service'
 
 @Injectable()
 export class GmailClient {
   private readonly gmail: gmail_v1.Gmail
 
-  constructor(private readonly oauth2Client: OAuth2Client) {
+  constructor(
+    private readonly oauth2Client: OAuth2Client,
+    private readonly tokenEncryptionService: TokenEncryptionService,
+  ) {
     this.gmail = google.gmail({ version: 'v1', auth: this.oauth2Client })
   }
 
@@ -71,8 +75,6 @@ export class GmailClient {
       error?.message?.includes('invalid_token') ||
       error?.message?.includes('invalid_grant') ||
       error?.message?.includes('unauthorized_client') ||
-      // Additional common Google OAuth errors
-      error?.code === 'ENOTFOUND' || // DNS lookup failed
       // Check for token revocation or expiration messages
       error?.message?.includes('token expired') ||
       error?.message?.includes('token revoked') ||
@@ -81,14 +83,17 @@ export class GmailClient {
   }
 
   private async setCredentials(user: User) {
-    const { googleAccessToken, googleRefreshToken } = user
-    if (!googleAccessToken || !googleRefreshToken) {
+    const { encryptedGoogleAccessToken, encryptedGoogleRefreshToken } = user
+    if (!encryptedGoogleAccessToken || !encryptedGoogleRefreshToken) {
       throw new Error('User missing access token or refresh token')
     }
 
+    const accessToken = this.tokenEncryptionService.decrypt(encryptedGoogleAccessToken)
+    const refreshToken = this.tokenEncryptionService.decrypt(encryptedGoogleRefreshToken)
+
     this.oauth2Client.setCredentials({
-      access_token: googleAccessToken,
-      refresh_token: googleRefreshToken,
+      access_token: accessToken,
+      refresh_token: refreshToken,
     })
   }
 }

@@ -21,7 +21,7 @@ export async function loginCommand(ctx: Context) {
     return
   }
 
-  if (!user.googleAccessToken) {
+  if (!user.autoExpenseEnabled) {
     logger.info(`User ${ctx.from.id} needs authentication`)
     await authenticateUser(ctx, apiClient)
   } else {
