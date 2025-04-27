@@ -2,11 +2,12 @@ import { AppModule } from '@jnscas/cy/src/application/app.module'
 import { ValidationPipe } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { NestFactory } from '@nestjs/core'
-import { NestFastifyApplication } from '@nestjs/platform-fastify'
+import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify'
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestFastifyApplication>(AppModule)
+  const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter())
   const configService = app.get(ConfigService)
+  const host = configService.get('SERVER_HOST') || '0.0.0.0'
   const port = configService.get('SERVER_PORT') || 3000
 
   app.useGlobalPipes(
@@ -16,7 +17,7 @@ async function bootstrap() {
     }),
   )
 
-  await app.listen(port)
+  await app.listen({ host, port })
   console.log(`Server running on port ${port}`)
 }
 bootstrap()
