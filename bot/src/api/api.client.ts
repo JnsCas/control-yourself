@@ -13,10 +13,7 @@ export class ApiClient {
   async getAuthUrl(telegramId: string) {
     logger.info('Getting auth URL', { telegramId })
     try {
-      const response = await this.httpClient.get(`/auth/login?telegramId=${telegramId}`, {
-        maxRedirects: 0,
-        validateStatus: (status) => status === 302,
-      })
+      const response = await this.httpClient.get(`/auth/login?telegramId=${telegramId}`)
       logger.info('Successfully got auth URL')
       return response.headers.location
     } catch (error) {
