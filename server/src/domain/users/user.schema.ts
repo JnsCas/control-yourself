@@ -12,10 +12,10 @@ export class User {
   username: string
 
   @Prop()
-  googleAccessToken?: string
+  encryptedGoogleAccessToken?: string
 
   @Prop()
-  googleRefreshToken?: string
+  encryptedGoogleRefreshToken?: string
 
   @Prop({ default: false })
   autoExpenseEnabled: boolean

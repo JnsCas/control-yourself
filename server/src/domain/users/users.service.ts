@@ -62,6 +62,18 @@ export class UsersService {
     return this.userRepository.findById(id)
   }
 
+  async enableAutoExpense(
+    userId: string,
+    encryptedGoogleAccessToken: string,
+    encryptedGoogleRefreshToken: string,
+  ): Promise<User> {
+    return this.userRepository.updateById(userId, {
+      autoExpenseEnabled: true,
+      encryptedGoogleAccessToken,
+      encryptedGoogleRefreshToken,
+    })
+  }
+
   async updateUser(id: string, updateData: Partial<User>): Promise<User | null> {
     return this.userRepository.updateById(id, updateData)
   }

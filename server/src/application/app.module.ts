@@ -7,6 +7,7 @@ import { GmailModule } from '@jnscas/cy/src/application/gmail/gmail.module'
 import { UsersModule } from '@jnscas/cy/src/application/users/users.module'
 import { HealthCheckController } from '@jnscas/cy/src/application/health-check.controller'
 import { AuthModule } from '@jnscas/cy/src/application/auth/auth.module'
+import { EncryptionModule } from '@jnscas/cy/src/infrastructure/encryption/encryption.module'
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { AuthModule } from '@jnscas/cy/src/application/auth/auth.module'
     ExpensesModule,
     GmailModule,
     AuthModule,
+    EncryptionModule,
   ],
   controllers: [HealthCheckController],
 })

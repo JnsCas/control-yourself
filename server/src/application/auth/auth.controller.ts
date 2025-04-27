@@ -2,12 +2,14 @@ import { Controller, Query, Get, Res } from '@nestjs/common'
 import { OAuth2Client } from 'google-auth-library'
 import { FastifyReply } from 'fastify'
 import { UsersService } from '@jnscas/cy/src/domain/users/users.service'
+import { TokenEncryptionService } from '@jnscas/cy/src/infrastructure/encryption/token-encryption.service'
 
 @Controller('auth')
 export class OAuth2Controller {
   constructor(
     private readonly oAuth2Client: OAuth2Client,
     private readonly usersService: UsersService,
+    private readonly tokenEncryptionService: TokenEncryptionService,
   ) {}
 
   @Get('login')
@@ -31,10 +33,10 @@ export class OAuth2Controller {
       throw new Error('User not found')
     }
 
-    await this.usersService.updateUser(user.id, {
-      googleAccessToken: tokens.access_token,
-      googleRefreshToken: tokens.refresh_token,
-    })
+    const encryptedAccessToken = this.tokenEncryptionService.encrypt(tokens.access_token)
+    const encryptedRefreshToken = this.tokenEncryptionService.encrypt(tokens.refresh_token)
+
+    await this.usersService.enableAutoExpense(user.id, encryptedAccessToken, encryptedRefreshToken)
 
     return 'Authentication successful! You can return to the bot.'
   }

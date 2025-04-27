@@ -16,7 +16,6 @@ export const summaryCommand = async (ctx: any) => {
 
   ctx.session = {}
 
-  // Show month selection keyboard
   const keyboard = Markup.inlineKeyboard([
     [Markup.button.callback('Current Month', 'summary_current'), Markup.button.callback('Last Month', 'summary_last')],
     [Markup.button.callback('Custom Month', 'summary_custom')],
@@ -115,6 +114,8 @@ async function showSummary(ctx: any, date: Date) {
   }
 
   const telegramId = ctx.from.id.toString()
+  // Variable to track loading indicator interval
+  let loadingInterval: NodeJS.Timeout | null = null
 
   try {
     const year = date.getFullYear()
@@ -127,6 +128,14 @@ async function showSummary(ctx: any, date: Date) {
       dateString: date.toISOString(),
     })
 
+    // Start periodic loading indicator for long operations
+    loadingInterval = setInterval(async () => {
+      await ctx.telegram.sendChatAction(ctx.chat.id, 'typing')
+    }, 3000)
+
+    // Show initial loading state
+    await ctx.telegram.sendChatAction(ctx.chat.id, 'typing')
+
     const apiClient = new ApiClient()
 
     const user = await apiClient.getUserByTelegramId(telegramId)
@@ -136,7 +145,10 @@ async function showSummary(ctx: any, date: Date) {
       return
     }
 
-    await apiClient.syncEmails(user.id)
+    if (user.autoExpenseEnabled) {
+      await apiClient.syncEmails(user.id)
+    }
+
     const expenses = await apiClient.getExpensesByMonth(user.id, year, month)
 
     if (!expenses || expenses.length === 0) {
@@ -231,6 +243,11 @@ async function showSummary(ctx: any, date: Date) {
     })
     await ctx.reply('Sorry, there was an error fetching your expenses. Please try again later.')
   } finally {
+    // Clear interval if it exists
+    if (loadingInterval) {
+      clearInterval(loadingInterval)
+    }
+
     // Clear session state
     ctx.session.summaryState = undefined
     logger.info('Summary session cleared', { userId: ctx.from.id })
