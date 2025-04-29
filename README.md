@@ -72,6 +72,10 @@ The server API will be available at `http://localhost:3000` (or the port specifi
 - `/server`: Contains the backend NestJS application handling API requests, database interactions, and email syncing.
 - `/bot`: Contains the Telegram bot application that interacts with users and the backend API.
 
+## License
+
+[MIT](LICENSE)
+
 ---
 
 _This project is open source. Contributions are welcome!_
