@@ -1,5 +1,5 @@
 {
-  "name": "credit-card-tracker-bot",
+  "name": "control-yourself-bot",
   "version": "1.0.0",
   "description": "Telegram bot for tracking credit card expenses",
   "main": "dist/main.js",
