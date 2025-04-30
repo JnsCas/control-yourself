@@ -16,7 +16,7 @@ Control Yourself is an open-source application designed to help you track your c
     - The email account designated to receive these alerts **must be a Gmail account** and configured via Google OAuth.
 - **Installment Support:** Endpoints to manage expenses made in installments.
 
-### Bot Features (Telegram Client)
+### Bot Features (Telegram Client [@Control_Yourself_bot](https://t.me/Control_Yourself_bot))
 
 - `/start`: Initiates interaction with the bot and displays a welcome message.
 - `/login`: Handles user authentication to enable the Automatic Expense Sync feature.
@@ -71,6 +71,10 @@ The server API will be available at `http://localhost:3000` (or the port specifi
 
 - `/server`: Contains the backend NestJS application handling API requests, database interactions, and email syncing.
 - `/bot`: Contains the Telegram bot application that interacts with users and the backend API.
+
+## License
+
+[MIT](LICENSE)
 
 ---
 
