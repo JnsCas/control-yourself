@@ -17,7 +17,7 @@ export class AuthExceptionFilter implements ExceptionFilter {
       path: request.url,
     })
 
-    response.status(HttpStatus.UNAUTHORIZED).send({
+    return response.status(HttpStatus.UNAUTHORIZED).send({
       statusCode: HttpStatus.UNAUTHORIZED,
       message: 'Authentication required',
       error: 'Gmail authentication failed',
