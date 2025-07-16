@@ -3,6 +3,7 @@ import { ApiClient } from '../api/api.client'
 import logger from '../utils/logger'
 import { ExpenseCurrency } from '../types/expense.types'
 import { AxiosError } from 'axios'
+import { ExpenseCurrency } from '../types/expense.types'
 
 export const summaryCommand = async (ctx: any) => {
   if (!ctx.from) {
