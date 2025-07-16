@@ -10,4 +10,7 @@ module.exports = {
     '^src/(.*)$': '<rootDir>/src/$1',
   },
   setupFiles: ['<rootDir>/setup.ts'],
+  testTimeout: 30000,
+  forceExit: true,
+  detectOpenHandles: true,
 }

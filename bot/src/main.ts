@@ -6,6 +6,7 @@ import * as login from './commands/login'
 import * as newExpense from './commands/new-expense'
 import * as summaryCommand from './commands/summary'
 import * as updateExpense from './commands/update-expense'
+import { authErrorMiddleware } from './middleware/auth-error.middleware'
 import logger from './utils/logger'
 
 logger.info('Starting bot initialization...')
@@ -33,6 +34,9 @@ bot.use(
   }),
 )
 logger.info('Session middleware added with enhanced configuration')
+
+bot.use(authErrorMiddleware)
+logger.info('Auth error middleware added')
 
 // Register commands
 bot.command('start', start.startCommand)

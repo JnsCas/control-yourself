@@ -1,14 +1,16 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { OAuth2Client } from 'google-auth-library'
 import { google } from 'googleapis'
 import { gmail_v1 } from 'googleapis/build/src/apis/gmail'
 import { User } from '@jnscas/cy/src/domain/users/entities/user.entity'
 import { GetMessageResponse } from '@jnscas/cy/src/domain/gmail/responses/get-message.response'
 import { TokenEncryptionService } from '@jnscas/cy/src/infrastructure/encryption/token-encryption.service'
+import { GmailAuthException } from '@jnscas/cy/src/domain/gmail/gmail-auth.exception'
 
 @Injectable()
 export class GmailClient {
   private readonly gmail: gmail_v1.Gmail
+  private readonly logger = new Logger(GmailClient.name)
 
   constructor(
     private readonly oauth2Client: OAuth2Client,
@@ -53,15 +55,21 @@ export class GmailClient {
       return await operation()
     } catch (error) {
       if (retryCount < MAX_RETRIES && this.isTokenError(error)) {
-        console.log(`Token error detected, retrying operation (${retryCount + 1}/${MAX_RETRIES})`)
+        this.logger.log(`Token error detected, retrying operation (${retryCount + 1}/${MAX_RETRIES})`)
         // Force token refresh on next attempt
         try {
           await this.oauth2Client.refreshAccessToken()
         } catch (refreshError) {
-          console.error('Failed to refresh token:', refreshError)
+          this.logger.error('Failed to refresh token:', refreshError)
         }
         return this.executeWithRetry(user, operation, retryCount + 1)
       }
+
+      // If it's a token error and we've exhausted retries, throw auth exception
+      if (this.isTokenError(error)) {
+        throw new GmailAuthException('Gmail authentication failed after retries', user.id, error)
+      }
+
       throw error
     }
   }
