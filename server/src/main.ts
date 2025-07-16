@@ -3,6 +3,7 @@ import { ValidationPipe } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { NestFactory } from '@nestjs/core'
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify'
+import { AuthExceptionFilter } from '@jnscas/cy/src/infrastructure/filters/auth-exception.filter'
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter())
@@ -16,6 +17,8 @@ async function bootstrap() {
       transform: true,
     }),
   )
+
+  app.useGlobalFilters(new AuthExceptionFilter())
 
   await app.listen({ host, port })
   console.log(`Server running on port ${port}`)

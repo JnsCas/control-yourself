@@ -1,6 +1,7 @@
 import { Markup } from 'telegraf'
 import { ApiClient } from '../api/api.client'
 import logger from '../utils/logger'
+import { ExpenseCurrency } from '../types/expense.types'
 
 export const summaryCommand = async (ctx: any) => {
   if (!ctx.from) {
@@ -162,6 +163,14 @@ async function showSummary(ctx: any, date: Date) {
       return
     }
 
+    // Calculate totals by currency
+    const totalsByCurrency: { [currency: string]: number } = {}
+    expenses.forEach((expense: any) => {
+      const amount = getAmount(expense, month, year)
+      const currency = expense.currency || ExpenseCurrency.ARS
+      totalsByCurrency[currency] = (totalsByCurrency[currency] || 0) + amount
+    })
+
     const total = getTotal(expenses, month, year)
 
     // Group expenses by merchant
@@ -171,33 +180,42 @@ async function showSummary(ctx: any, date: Date) {
     expenses.forEach((expense: any) => {
       const merchant = expense.merchant
       const amount = getAmount(expense, month, year)
+      const currency = expense.currency || ExpenseCurrency.ARS
 
       // Split merchant name by '*' or space
       const parts = merchant.split(/[*\s]/)
       const prefix = parts[0].trim()
       const suffix = parts.slice(1).join(' ').trim()
 
+      // Create merchant key that includes currency for USD
+      const merchantKey = currency === ExpenseCurrency.USD ? `${prefix} (USD)` : prefix
+
       // Initialize prefix group if it doesn't exist
-      if (!merchantDetails[prefix]) {
-        merchantDetails[prefix] = {}
+      if (!merchantDetails[merchantKey]) {
+        merchantDetails[merchantKey] = {}
       }
 
       // Add to total for the prefix
-      byMerchant[prefix] = (byMerchant[prefix] || 0) + amount
+      byMerchant[merchantKey] = (byMerchant[merchantKey] || 0) + amount
 
       // Add to detailed breakdown if there's a suffix
       if (suffix) {
-        merchantDetails[prefix][suffix] = (merchantDetails[prefix][suffix] || 0) + amount
+        merchantDetails[merchantKey][suffix] = (merchantDetails[merchantKey][suffix] || 0) + amount
       } else {
         // If no suffix, just add to the prefix total
-        merchantDetails[prefix][''] = (merchantDetails[prefix][''] || 0) + amount
+        merchantDetails[merchantKey][''] = (merchantDetails[merchantKey][''] || 0) + amount
       }
     })
 
     // Create summary message
     let message = `*📊 Expenses Summary for ${date.toLocaleString('default', { month: 'long', year: 'numeric' })}*\n\n`
-    message += `*Total:* $${total.toFixed(2)}\n\n`
-    message += `*Breakdown by merchant:*\n`
+
+    // Show totals by currency
+    Object.entries(totalsByCurrency).forEach(([currency, totalAmount]) => {
+      message += `*Total ${currency}:* ${formatAmount(totalAmount, currency)}\n`
+    })
+
+    message += `\n*Breakdown by merchant:*\n`
 
     // Sort prefixes by total amount
     Object.entries(byMerchant)
@@ -211,12 +229,17 @@ async function showSummary(ctx: any, date: Date) {
         if (subItemKeys.length <= 1) {
           const suffix = subItemKeys[0] || ''
           const fullName = suffix ? `${prefix} ${suffix}` : prefix
+          const isUSD = prefix.includes('(USD)')
+          const currency = isUSD ? ExpenseCurrency.USD : ExpenseCurrency.ARS
 
           const installmentText = getInstallmentInfo(expenses, fullName, month, year)
-          message += `\n*${fullName}:* $${totalAmount.toFixed(2)} (${percentage}%)${installmentText}\n`
+          message += `\n*${fullName}:* ${formatAmount(totalAmount, currency)} (${percentage}%)${installmentText}\n`
         } else {
           // Show hierarchical structure for multiple sub-items
-          message += `\n*${prefix}:* $${totalAmount.toFixed(2)} (${percentage}%)\n`
+          const isUSD = prefix.includes('(USD)')
+          const currency = isUSD ? ExpenseCurrency.USD : ExpenseCurrency.ARS
+
+          message += `\n*${prefix}:* ${formatAmount(totalAmount, currency)} (${percentage}%)\n`
           Object.entries(subItems)
             .sort((a, b) => b[1] - a[1])
             .forEach(([suffix, amount]) => {
@@ -226,7 +249,7 @@ async function showSummary(ctx: any, date: Date) {
                 const fullMerchant = `${prefix} ${suffix}`
 
                 const installmentText = getInstallmentInfo(expenses, fullMerchant, month, year)
-                message += `  └─ ${suffix}: $${amount.toFixed(2)} (${subPercentage}%)${installmentText}\n`
+                message += `  └─ ${suffix}: ${formatAmount(amount, currency)} (${subPercentage}%)${installmentText}\n`
               }
             })
         }
@@ -288,4 +311,11 @@ const getInstallmentInfo = (expenses: any[], merchantName: string, month: number
 const isSameMonthAndYear = (dateString: string, month: number, year: number) => {
   const date = new Date(dateString)
   return date.getMonth() + 1 === month && date.getFullYear() === year
+}
+
+const formatAmount = (amount: number, currency: string = ExpenseCurrency.ARS) => {
+  if (currency === ExpenseCurrency.USD) {
+    return `$${amount.toFixed(2)}`
+  }
+  return `$${amount.toFixed(0)}`
 }
