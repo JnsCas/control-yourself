@@ -1,6 +1,7 @@
 import { Markup } from 'telegraf'
 import { ApiClient } from '../api/api.client'
 import logger from '../utils/logger'
+import { AxiosError } from 'axios'
 import { ExpenseCurrency } from '../types/expense.types'
 
 export const summaryCommand = async (ctx: any) => {
@@ -264,6 +265,9 @@ async function showSummary(ctx: any, date: Date) {
       dateString: date.toISOString(),
       error: error instanceof Error ? error.message : 'Unknown error',
     })
+    if (error instanceof AxiosError && error.response?.status === 401) {
+      throw error
+    }
     await ctx.reply('Sorry, there was an error fetching your expenses. Please try again later.')
   } finally {
     // Clear interval if it exists
