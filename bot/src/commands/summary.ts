@@ -175,8 +175,9 @@ async function showSummary(ctx: any, date: Date) {
     const total = getTotal(expenses, month, year)
 
     // Group expenses by merchant
-    const byMerchant: { [key: string]: number } = {}
+    const byMerchant: { [key: string]: any } = {}
     const merchantDetails: { [key: string]: { [key: string]: number } } = {}
+    const merchantExpenseIds: { [key: string]: string[] } = {}
 
     expenses.forEach((expense: any) => {
       const merchant = expense.merchant
@@ -194,7 +195,10 @@ async function showSummary(ctx: any, date: Date) {
       // Initialize prefix group if it doesn't exist
       if (!merchantDetails[merchantKey]) {
         merchantDetails[merchantKey] = {}
+        merchantExpenseIds[merchantKey] = []
       }
+
+      merchantExpenseIds[merchantKey].push(expense.id)
 
       // Add to total for the prefix
       byMerchant[merchantKey] = (byMerchant[merchantKey] || 0) + amount
@@ -225,6 +229,7 @@ async function showSummary(ctx: any, date: Date) {
         const percentage = ((totalAmount / total) * 100).toFixed(1)
         const subItems = merchantDetails[prefix]
         const subItemKeys = Object.keys(subItems).filter((key) => key !== '')
+        const expenseIds = merchantExpenseIds[prefix] || []
 
         // If there's only one sub-item or no sub-items, combine them
         if (subItemKeys.length <= 1) {
@@ -233,7 +238,8 @@ async function showSummary(ctx: any, date: Date) {
           const isUSD = prefix.includes('(USD)')
           const currency = isUSD ? ExpenseCurrency.USD : ExpenseCurrency.ARS
 
-          const installmentText = getInstallmentInfo(expenses, fullName, month, year)
+          const expenseId = expenseIds.length === 1 ? expenseIds[0] : undefined
+          const installmentText = getInstallmentInfo(expenses, fullName, month, year, expenseId)
           message += `\n*${fullName}:* ${formatAmount(totalAmount, currency)} (${percentage}%)${installmentText}\n`
         } else {
           // Show hierarchical structure for multiple sub-items
@@ -243,13 +249,13 @@ async function showSummary(ctx: any, date: Date) {
           message += `\n*${prefix}:* ${formatAmount(totalAmount, currency)} (${percentage}%)\n`
           Object.entries(subItems)
             .sort((a, b) => b[1] - a[1])
-            .forEach(([suffix, amount]) => {
+            .forEach(([suffix, amount], idx) => {
               if (suffix) {
                 // Only show if there's a suffix
                 const subPercentage = ((amount / totalAmount) * 100).toFixed(1)
                 const fullMerchant = `${prefix} ${suffix}`
-
-                const installmentText = getInstallmentInfo(expenses, fullMerchant, month, year)
+                const expenseId = expenseIds[idx]
+                const installmentText = getInstallmentInfo(expenses, fullMerchant, month, year, expenseId)
                 message += `  └─ ${suffix}: ${formatAmount(amount, currency)} (${subPercentage}%)${installmentText}\n`
               }
             })
@@ -258,6 +264,9 @@ async function showSummary(ctx: any, date: Date) {
 
     await ctx.reply(message, { parse_mode: 'Markdown' })
   } catch (error) {
+    if (error instanceof AxiosError && error.response?.status === 401) {
+      throw error
+    }
     logger.error('Error fetching expenses for summary', {
       userId: ctx.from.id,
       year: date.getFullYear(),
@@ -265,9 +274,6 @@ async function showSummary(ctx: any, date: Date) {
       dateString: date.toISOString(),
       error: error instanceof Error ? error.message : 'Unknown error',
     })
-    if (error instanceof AxiosError && error.response?.status === 401) {
-      throw error
-    }
     await ctx.reply('Sorry, there was an error fetching your expenses. Please try again later.')
   } finally {
     // Clear interval if it exists
@@ -296,19 +302,21 @@ const getAmount = (expense: any, month: number, year: number) => {
 }
 
 // Get installment information for a specific merchant
-const getInstallmentInfo = (expenses: any[], merchantName: string, month: number, year: number) => {
-  const expense = expenses.find((expense: any) => {
-    const expMerchant = expense.merchant.trim()
-    return expMerchant === merchantName && expense.installments
-  })
-
+const getInstallmentInfo = (expenses: any[], merchantName: string, month: number, year: number, expenseId?: string) => {
+  let expense: any
+  if (expenseId) {
+    expense = expenses.find((expense: any) => expense.id === expenseId && expense.installments)
+  }
+  if (!expense) {
+    expense = expenses.find((expense: any) => {
+      const expMerchant = expense.merchant.trim()
+      return expMerchant === merchantName && expense.installments
+    })
+  }
   if (!expense?.installments) return ''
-
   const currentInstallment =
     expense.installments.findIndex((installment: any) => isSameMonthAndYear(installment.dueDate, month, year)) + 1
-
   if (currentInstallment <= 0) return ''
-
   return ` [${currentInstallment}/${expense.installments.length}]`
 }
 
