@@ -37,7 +37,7 @@ This project uses Docker Compose to manage its services (backend server, Telegra
 
 1.  **Clone the repository:**
     ```bash
-    git clone <your-repository-url>
+    git clone git@github.com:JnsCas/control-yourself.git
     cd control-yourself
     ```
 2.  **Set up environment variables:**
