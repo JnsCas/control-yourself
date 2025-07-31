@@ -140,6 +140,7 @@ async function showSummary(ctx: any, date: Date) {
 
     const apiClient = new ApiClient()
 
+    //FIXME move this to the server side
     const user = await apiClient.getUserByTelegramId(telegramId)
     if (!user) {
       logger.error('User not found', { telegramId })

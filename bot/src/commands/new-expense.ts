@@ -1,5 +1,6 @@
 import { Markup } from 'telegraf'
 import { ApiClient } from '../api/api.client'
+import { ExpenseCurrency, ExpenseSource } from '../types/expense.types'
 import logger from '../utils/logger'
 
 export const newExpenseCommand = async (ctx: any) => {
@@ -26,8 +27,8 @@ export const newExpenseCommand = async (ctx: any) => {
     ],
     [
       Markup.button.callback('$100k', 'amount_100000'),
-      Markup.button.callback('$200k', 'amount_150000'),
-      Markup.button.callback('$500k', 'amount_200000'),
+      Markup.button.callback('$200k', 'amount_200000'),
+      Markup.button.callback('$500k', 'amount_500000'),
     ],
     [Markup.button.callback('Custom Amount', 'amount_custom')],
   ])
@@ -222,7 +223,7 @@ export const handleDateSelection = async (ctx: any) => {
   }
 
   ctx.session.expenseData.date = date
-  await saveExpense(ctx)
+  await showInstallmentsSelection(ctx)
 }
 
 export const handleCustomDate = async (ctx: any) => {
@@ -269,6 +270,99 @@ export const handleCustomDate = async (ctx: any) => {
   }
 
   ctx.session.expenseData.date = date
+  await showInstallmentsSelection(ctx)
+}
+
+async function showInstallmentsSelection(ctx: any) {
+  if (!ctx.from) return
+
+  // Set state to installments before showing installments selection
+  ctx.session.expenseState = 'installments'
+
+  const keyboard = Markup.inlineKeyboard([
+    [
+      Markup.button.callback('1x (Single Payment)', 'installments_1'),
+      Markup.button.callback('3x', 'installments_3'),
+      Markup.button.callback('6x', 'installments_6'),
+    ],
+    [
+      Markup.button.callback('12x', 'installments_12'),
+      Markup.button.callback('18x', 'installments_18'),
+      Markup.button.callback('24x', 'installments_24'),
+    ],
+    [Markup.button.callback('Custom Installments', 'installments_custom')],
+  ])
+
+  await ctx.reply('Select number of installments:', keyboard)
+  logger.info('Sent installments selection keyboard', {
+    userId: ctx.from.id,
+    amount: ctx.session.expenseData.amount,
+    merchant: ctx.session.expenseData.merchant,
+    date: ctx.session.expenseData.date,
+  })
+}
+
+export const handleInstallmentsSelection = async (ctx: any) => {
+  if (!ctx.from) {
+    logger.error('Installments selection handler called without user context')
+    return
+  }
+
+  // Answer the callback query to remove the loading message
+  await ctx.answerCbQuery()
+
+  const installments = ctx.callbackQuery.data.replace('installments_', '')
+  logger.info('Installments selection received', {
+    userId: ctx.from.id,
+    installments,
+    isCustom: installments === 'custom',
+  })
+
+  if (installments === 'custom') {
+    await ctx.reply('Please enter the number of installments (2 or more):', Markup.forceReply())
+    return
+  }
+
+  const installmentsNumber = parseInt(installments)
+  if (installmentsNumber === 1) {
+    // Single payment, no installments needed
+    ctx.session.expenseData.installmentsTotal = undefined
+  } else {
+    ctx.session.expenseData.installmentsTotal = installmentsNumber
+  }
+
+  await saveExpense(ctx)
+}
+
+export const handleCustomInstallments = async (ctx: any) => {
+  if (!ctx.from || !ctx.message) {
+    logger.error('Custom installments handler called with invalid context', {
+      userId: ctx.from?.id,
+      hasMessage: !!ctx.message,
+      hasText: ctx.message && 'text' in ctx.message,
+    })
+    await ctx.reply('Error: Invalid input')
+    return
+  }
+
+  const installments = parseInt(ctx.message.text)
+  logger.info('Custom installments received', {
+    userId: ctx.from.id,
+    installments,
+  })
+
+  if (isNaN(installments) || installments < 2) {
+    logger.warn('Invalid installments received', {
+      userId: ctx.from.id,
+      installments: ctx.message.text,
+    })
+    // Maintain the session state when asking for retry
+    ctx.session.expenseState = 'installments'
+    await ctx.reply('Please enter a valid number of installments (2 or more):', Markup.forceReply())
+    return
+  }
+
+  ctx.session.expenseData.installmentsTotal = installments
   await saveExpense(ctx)
 }
 
@@ -279,42 +373,61 @@ async function saveExpense(ctx: any) {
   }
 
   try {
+    const apiClient = new ApiClient()
+
+    //FIXME move this to the server side
+    const user = await apiClient.getUserByTelegramId(ctx.from.id.toString())
+    if (!user) {
+      logger.error('User not found', { telegramId: ctx.from.id })
+      await ctx.reply('Error: User not found')
+      return
+    }
+
     logger.info('Attempting to save expense', {
-      userId: ctx.from.id,
+      userId: user.id,
       amount: ctx.session.expenseData.amount,
       merchant: ctx.session.expenseData.merchant,
       date: ctx.session.expenseData.date,
+      installmentsTotal: ctx.session.expenseData.installmentsTotal,
     })
 
-    const apiClient = new ApiClient()
     await apiClient.createExpense({
-      userId: ctx.from.id.toString(),
+      userId: user.id,
       amount: ctx.session.expenseData.amount,
       merchant: ctx.session.expenseData.merchant,
       date: ctx.session.expenseData.date,
-      type: 'MANUAL',
+      source: ExpenseSource.TELEGRAM,
+      currency: ExpenseCurrency.ARS,
+      installmentsTotal: ctx.session.expenseData.installmentsTotal,
     })
 
     // Format date as DD-MM-YYYY
     const date = ctx.session.expenseData.date
     const formattedDate = `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getFullYear()}`
 
-    await ctx.reply(
+    // Build success message
+    let successMessage =
       `Expense added successfully! 🎉\n` +
-        `Amount: $${ctx.session.expenseData.amount}\n` +
-        `Merchant: ${ctx.session.expenseData.merchant}\n` +
-        `Date: ${formattedDate}`,
-    )
+      `Amount: $${ctx.session.expenseData.amount}\n` +
+      `Merchant: ${ctx.session.expenseData.merchant}\n` +
+      `Date: ${formattedDate}`
+
+    if (ctx.session.expenseData.installmentsTotal) {
+      successMessage += `\nInstallments: ${ctx.session.expenseData.installmentsTotal}x`
+    }
+
+    await ctx.reply(successMessage)
 
     logger.info('Expense saved successfully', {
-      userId: ctx.from.id,
+      userId: user.id,
       amount: ctx.session.expenseData.amount,
       merchant: ctx.session.expenseData.merchant,
       date: formattedDate,
+      installmentsTotal: ctx.session.expenseData.installmentsTotal,
     })
   } catch (error) {
     logger.error('Error saving expense', {
-      userId: ctx.from.id,
+      telegramId: ctx.from.id,
       error: error instanceof Error ? error.message : 'Unknown error',
       expenseData: ctx.session.expenseData,
     })
@@ -323,6 +436,6 @@ async function saveExpense(ctx: any) {
     // Clear session state
     ctx.session.expenseState = undefined
     ctx.session.expenseData = undefined
-    logger.info('Expense session cleared', { userId: ctx.from.id })
+    logger.info('Expense session cleared', { telegramId: ctx.from.id })
   }
 }

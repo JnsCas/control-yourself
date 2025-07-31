@@ -51,6 +51,7 @@ logger.info('All commands registered')
 bot.action(/^amount_/, newExpense.handleAmountSelection)
 bot.action(/^merchant_/, newExpense.handleMerchantSelection)
 bot.action(/^date_/, newExpense.handleDateSelection)
+bot.action(/^installments_/, newExpense.handleInstallmentsSelection)
 bot.action(/^summary_/, summaryCommand.handleSummarySelection)
 bot.action(/^update_month_/, updateExpense.handleUpdateMonthSelection)
 bot.action(/^update_select_/, updateExpense.handleExpenseSelection)
@@ -58,17 +59,19 @@ bot.action(/^update_page_/, updateExpense.handlePageNavigation)
 bot.action('update_cancel', updateExpense.handleCancel)
 logger.info('All callback handlers registered')
 
-// Handle custom amount input
+// Handle custom amount and installments input
 bot.hears(/^\d+(\.\d{1,2})?$/, async (ctx: any) => {
   if (!ctx.from) return
   if (ctx.session?.expenseState === 'amount') {
     await newExpense.handleCustomAmount(ctx)
+  } else if (ctx.session?.expenseState === 'installments') {
+    await newExpense.handleCustomInstallments(ctx)
   } else if (ctx.session?.updateExpenseState === 'entering_installments') {
     await updateExpense.handleInstallmentsInput(ctx)
   }
 })
 
-// Handle custom merchant, date, and month input
+// Handle custom merchant, date, installments, and month input
 bot.hears(/^.+$/, async (ctx: any) => {
   if (!ctx.from) return
 
@@ -76,6 +79,8 @@ bot.hears(/^.+$/, async (ctx: any) => {
     await newExpense.handleCustomMerchant(ctx)
   } else if (ctx.session?.expenseState === 'date') {
     await newExpense.handleCustomDate(ctx)
+  } else if (ctx.session?.expenseState === 'installments') {
+    await newExpense.handleCustomInstallments(ctx)
   } else if (ctx.session?.summaryState === 'awaiting_month') {
     await summaryCommand.handleCustomMonth(ctx)
   } else if (ctx.session?.updateExpenseState === 'entering_month') {

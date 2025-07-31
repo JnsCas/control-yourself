@@ -1,4 +1,5 @@
 import axios, { AxiosInstance } from 'axios'
+import { ExpenseCurrency, ExpenseSource } from '../types/expense.types'
 import logger from '../utils/logger'
 
 export class ApiClient {
@@ -37,6 +38,7 @@ export class ApiClient {
     }
   }
 
+  //FIXME remove this method and resolve the user id in server side
   async getUserByTelegramId(telegramId: string) {
     logger.info('Fetching user', { telegramId })
     try {
@@ -54,14 +56,14 @@ export class ApiClient {
     amount: number
     merchant: string
     date: Date
-    type: 'MANUAL' | 'AUTO'
-    source?: 'GMAIL'
+    source: ExpenseSource
+    currency: ExpenseCurrency
+    installmentsTotal?: number
   }) {
     logger.info('Creating new expense', {
       userId: expenseData.userId,
       amount: expenseData.amount,
       merchant: expenseData.merchant,
-      type: expenseData.type,
     })
     try {
       const response = await this.httpClient.post('/expenses', expenseData)
