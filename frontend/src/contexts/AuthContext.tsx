@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { config } from '@/lib/config';
 
 interface User {
   id: string;
@@ -32,7 +33,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const email = getCookie('email');
       const token = getCookie('auth-token');
       if (email && token) {
-        const response = await fetch(`/users?email=${email}`, {
+        const response = await fetch(`${config.apiUrl}/users?email=${email}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -55,18 +56,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async () => {
     try {
       setLoading(true);
-      // Here you would implement Google login logic
-      // For now we simulate a successful login
-      const mockUser: User = {
-        id: '1',
-        email: 'user@example.com',
-        name: 'Example User',
-        picture: 'https://via.placeholder.com/150'
-      };
-      
-      setUser(mockUser);
-      // Guardar token en cookie
-      document.cookie = 'auth-token=mock-token; path=/; max-age=86400';
+      const response = await fetch(`${config.apiUrl}/auth/web/login`);
+      const data = await response.json();
+      window.location.replace(data.authUrl);
     } catch (error) {
       console.error('Error during login:', error);
     } finally {
@@ -77,8 +69,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     try {
       setUser(null);
-      // Eliminar token
+      // Eliminar cookies
       document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+      document.cookie = 'email=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
       // Redirigir a login
       window.location.href = '/login';
     } catch (error) {

@@ -11,7 +11,7 @@ export class AuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<FastifyRequest>()
-    const token = request.headers['authorization'] as string
+    const token = this.extractTokenFromHeader(request)
     if (!token) {
       throw new UnauthorizedException()
     }
@@ -23,5 +23,10 @@ export class AuthGuard implements CanActivate {
 
     RequestContextHolder.init(new CYRequestContext(decoded.email as string))
     return true
+  }
+
+  private extractTokenFromHeader(request: FastifyRequest): string | undefined {
+    const [type, token] = request.headers.authorization?.split(' ') ?? []
+    return type === 'Bearer' ? token : undefined
   }
 }

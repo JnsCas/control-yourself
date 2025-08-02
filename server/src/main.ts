@@ -22,6 +22,11 @@ async function bootstrap() {
   app.register(fastifyRequestContext)
   app.useGlobalFilters(new AuthExceptionFilter())
 
+  app.enableCors({
+    origin: ['http://localhost:3000', 'http://localhost:3001'],
+    credentials: true,
+  })
+
   await app.listen({ host, port })
   console.log(`Server running on port ${port}`)
 }
