@@ -24,18 +24,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Verificar si hay un token al cargar la aplicación
     checkAuthStatus();
   }, []);
 
   const checkAuthStatus = async () => {
     try {
-      // Aquí deberías hacer una llamada a tu API para verificar el token
+      const email = getCookie('email');
       const token = getCookie('auth-token');
-      
-      if (token) {
-        // Verificar token con el backend
-        const response = await fetch('/api/auth/verify', {
+      if (email && token) {
+        const response = await fetch(`/users?email=${email}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -45,7 +42,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const userData = await response.json();
           setUser(userData);
         } else {
-          // Token inválido, limpiar
           logout();
         }
       }
@@ -113,7 +109,6 @@ export function useAuth() {
   return context;
 }
 
-// Función helper para obtener cookies
 function getCookie(name: string): string | undefined {
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);

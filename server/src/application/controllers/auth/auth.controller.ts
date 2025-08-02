@@ -40,4 +40,37 @@ export class OAuth2Controller {
 
     return 'Authentication successful! You can return to the bot.'
   }
+
+  @Get('web/login')
+  async webLogin(@Query('email') email: string, @Res() res: FastifyReply) {
+    const authUrl = this.oAuth2Client.generateAuthUrl({
+      access_type: 'offline',
+      scope: ['https://www.googleapis.com/auth/gmail.readonly'],
+      prompt: 'consent',
+      state: email,
+    })
+
+    return res.redirect(authUrl)
+  }
+
+  @Get('web/callback')
+  async handleWebGoogleCallback(@Query('code') code: string, @Query('state') email: string) {
+    const { tokens } = await this.oAuth2Client.getToken(code)
+
+    const user = await this.usersService.getUserByEmail(email)
+
+    await this.usersService.enableAutoExpense(user.id)
+
+    return {
+      isNewUser: !user,
+      user: {
+        id: user?.id,
+        email: user?.email,
+        username: user?.username,
+        lastEmailSync: user?.lastEmailSync,
+        autoExpenseEnabled: user?.autoExpenseEnabled,
+      },
+      token: tokens.access_token,
+    }
+  }
 }

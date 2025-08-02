@@ -5,7 +5,10 @@ export type UserDocument = User & Document
 
 @Schema()
 export class User {
-  @Prop()
+  @Prop({ unique: true, sparse: true })
+  email?: string
+
+  @Prop({ unique: true, sparse: true })
   telegramId?: string
 
   @Prop({ required: true })

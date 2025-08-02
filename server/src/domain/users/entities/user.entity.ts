@@ -6,6 +6,7 @@ export class User {
     public readonly id: string,
     public readonly username: string,
     public readonly autoExpenseEnabled: boolean,
+    public readonly email?: string,
     public readonly telegramId?: string,
     public readonly lastEmailSync?: Date,
     public readonly encryptedGoogleAccessToken?: string,
@@ -15,6 +16,7 @@ export class User {
   static create(
     username: string,
     autoExpenseEnabled: boolean,
+    email?: string,
     telegramId?: string,
     lastEmailSync?: Date,
     encryptedGoogleAccessToken?: string,
@@ -24,6 +26,7 @@ export class User {
       MongoIdManager.randomId(),
       username,
       autoExpenseEnabled,
+      email,
       telegramId,
       lastEmailSync,
       encryptedGoogleAccessToken,
@@ -36,6 +39,7 @@ export class User {
       document._id.toString(),
       document.username,
       document.autoExpenseEnabled,
+      document.email,
       document.telegramId,
       document.lastEmailSync,
       document.encryptedGoogleAccessToken,
@@ -49,6 +53,7 @@ export class User {
 
   toDocument(): Partial<UserDocument> {
     return {
+      email: this.email,
       telegramId: this.telegramId,
       username: this.username,
       autoExpenseEnabled: this.autoExpenseEnabled,

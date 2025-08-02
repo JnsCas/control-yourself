@@ -1,13 +1,13 @@
+import { AuthModule } from '@jnscas/cy/src/application/modules/auth.module'
+import { ExpensesModule } from '@jnscas/cy/src/application/modules/expenses.module'
+import { GmailModule } from '@jnscas/cy/src/application/modules/gmail.module'
+import { HealthCheckController } from '@jnscas/cy/src/application/controllers/health-check/health-check.controller'
+import { UsersModule } from '@jnscas/cy/src/application/modules/users.module'
+import { EncryptionModule } from '@jnscas/cy/src/infrastructure/encryption/encryption.module'
 import { Module } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { MongooseModule } from '@nestjs/mongoose'
 import { ScheduleModule } from '@nestjs/schedule'
-import { ExpensesModule } from '@jnscas/cy/src/application/expenses/expenses.module'
-import { GmailModule } from '@jnscas/cy/src/application/gmail/gmail.module'
-import { UsersModule } from '@jnscas/cy/src/application/users/users.module'
-import { HealthCheckController } from '@jnscas/cy/src/application/health-check.controller'
-import { AuthModule } from '@jnscas/cy/src/application/auth/auth.module'
-import { EncryptionModule } from '@jnscas/cy/src/infrastructure/encryption/encryption.module'
 
 @Module({
   imports: [

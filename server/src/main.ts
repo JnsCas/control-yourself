@@ -1,9 +1,10 @@
-import { AppModule } from '@jnscas/cy/src/application/app.module'
+import { AppModule } from '@jnscas/cy/src/application/modules/app.module'
 import { ValidationPipe } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { NestFactory } from '@nestjs/core'
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify'
 import { AuthExceptionFilter } from '@jnscas/cy/src/infrastructure/filters/auth-exception.filter'
+import fastifyRequestContext from '@fastify/request-context'
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter())
@@ -18,6 +19,7 @@ async function bootstrap() {
     }),
   )
 
+  app.register(fastifyRequestContext)
   app.useGlobalFilters(new AuthExceptionFilter())
 
   await app.listen({ host, port })

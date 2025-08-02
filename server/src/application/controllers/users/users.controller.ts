@@ -1,7 +1,19 @@
-import { CreateUserDto } from '@jnscas/cy/src/application/users/dtos/create-user.dto'
+import { CreateUserDto } from '@jnscas/cy/src/application/controllers/users/dtos/create-user.dto'
 import { User } from '@jnscas/cy/src/domain/users/entities/user.entity'
 import { UsersService } from '@jnscas/cy/src/domain/users/users.service'
-import { BadRequestException, Body, Controller, Get, Logger, NotFoundException, Param, Post } from '@nestjs/common'
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Logger,
+  NotFoundException,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common'
+import { RequestContextHolder } from '@jnscas/cy/src/infrastructure/context/RequestContextHolder'
+import { AuthGuard } from '@jnscas/cy/src/application/guards/auth.guard'
 
 @Controller('users')
 export class UsersController {
@@ -32,6 +44,16 @@ export class UsersController {
   async getUser(@Param('telegramId') telegramId: string) {
     this.logger.log('Getting user by telegramId', { telegramId })
     const user = await this.usersService.getUserByTelegramId(telegramId)
+    this.logger.log('User found', { user })
+    return user
+  }
+
+  @Get()
+  @UseGuards(AuthGuard)
+  async getUserByEmail() {
+    const email = RequestContextHolder.getContext().userEmail
+    this.logger.log('Getting user by email', { email })
+    const user = await this.usersService.getUserByEmail(email)
     this.logger.log('User found', { user })
     return user
   }

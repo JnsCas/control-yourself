@@ -18,6 +18,11 @@ export class UserRepository {
     return result ? User.restore(result) : null
   }
 
+  async findOneByEmail(email: string): Promise<User | null> {
+    const result = await this.userModel.findOne({ email }).exec()
+    return result ? User.restore(result) : null
+  }
+
   async findOneByUsername(username: string): Promise<User | null> {
     const result = await this.userModel.findOne({ username }).exec()
     return result ? User.restore(result) : null

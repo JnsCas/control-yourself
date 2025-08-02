@@ -15,6 +15,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@fastify/request-context": "^6.2.0",
     "@jnscas/cy": "file:.",
     "@nestjs/common": "^11.0.0",
     "@nestjs/config": "^4.0.0",

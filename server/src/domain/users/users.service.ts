@@ -54,6 +54,10 @@ export class UsersService {
     return this.userRepository.findOneByTelegramId(telegramId)
   }
 
+  async getUserByEmail(email?: string): Promise<User | null> {
+    return this.userRepository.findOneByEmail(email)
+  }
+
   async getUserByUsername(username: string): Promise<User | null> {
     return this.userRepository.findOneByUsername(username)
   }
@@ -64,8 +68,8 @@ export class UsersService {
 
   async enableAutoExpense(
     userId: string,
-    encryptedGoogleAccessToken: string,
-    encryptedGoogleRefreshToken: string,
+    encryptedGoogleAccessToken?: string,
+    encryptedGoogleRefreshToken?: string,
   ): Promise<User> {
     return this.userRepository.updateById(userId, {
       autoExpenseEnabled: true,
