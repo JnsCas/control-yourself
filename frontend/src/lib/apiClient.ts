@@ -15,12 +15,12 @@ function fetchWithAuth(url: string, options: RequestInit) {
   return fetch(`${config.apiUrl}${url}`, {
     ...options,
     headers: {
-      Authorization: `Bearer ${getAuthorizationCookie()}`,
+      Authorization: `${getBearerAuthorizationCookie()}`,
     },
   })
 }
 
-function getAuthorizationCookie() {
+function getBearerAuthorizationCookie() {
   const cookies = document.cookie.split(';')
   const authorizationCookie = cookies.find((cookie) => cookie.trim().startsWith('Authorization='))
   return authorizationCookie?.split('=')[1]
