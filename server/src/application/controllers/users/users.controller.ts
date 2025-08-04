@@ -44,17 +44,17 @@ export class UsersController {
   async getUser(@Param('telegramId') telegramId: string) {
     this.logger.log('Getting user by telegramId', { telegramId })
     const user = await this.usersService.getUserByTelegramId(telegramId)
-    this.logger.log('User found', { user })
+    this.logger.log('User found')
     return user
   }
 
-  @Get()
+  @Get('current')
   @UseGuards(AuthGuard)
-  async getUserByEmail() {
+  async getCurrentUser() {
     const email = RequestContextHolder.getContext().userEmail
     this.logger.log('Getting user by email', { email })
     const user = await this.usersService.getUserByEmail(email)
-    this.logger.log('User found', { user })
+    this.logger.log('User found')
     return user
   }
 

@@ -2,6 +2,8 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { config } from '@/lib/config';
+import { useRouter } from 'next/navigation';
+import apiClient from '@/lib/apiClient';
 
 interface User {
   id: string;
@@ -23,6 +25,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     checkAuthStatus();
@@ -30,24 +33,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const checkAuthStatus = async () => {
     try {
-      const email = getCookie('email');
-      const token = getCookie('auth-token');
-      if (email && token) {
-        const response = await fetch(`${config.apiUrl}/users?email=${email}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        
-        if (response.ok) {
-          const userData = await response.json();
-          setUser(userData);
-        } else {
-          logout();
-        }
+      const response = await apiClient.get(`/users/current`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        setUser(data.user);
+      } else {
+        setUser(null);
+        router.push('/login');
       }
     } catch (error) {
       console.error('Error checking auth status:', error);
+      setUser(null);
+      router.push('/login');
     } finally {
       setLoading(false);
     }
@@ -69,13 +67,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     try {
       setUser(null);
-      // Eliminar cookies
-      document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
-      document.cookie = 'email=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
-      // Redirigir a login
-      window.location.href = '/login';
+      setLoading(false);
+      
+      await fetch(`${config.apiUrl}/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      
+      router.push('/login');
     } catch (error) {
       console.error('Error during logout:', error);
+      router.push('/login');
     }
   };
 
@@ -101,10 +103,3 @@ export function useAuth() {
   }
   return context;
 }
-
-function getCookie(name: string): string | undefined {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop()?.split(';').shift();
-  return undefined;
-} 

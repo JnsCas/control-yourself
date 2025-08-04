@@ -11,6 +11,7 @@ async function bootstrap() {
   const configService = app.get(ConfigService)
   const host = configService.get('SERVER_HOST') || '0.0.0.0'
   const port = configService.get('SERVER_PORT') || 3000
+  const clientUrl = configService.get('CLIENT_URL') || 'http://localhost:3001'
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -23,7 +24,7 @@ async function bootstrap() {
   app.useGlobalFilters(new AuthExceptionFilter())
 
   app.enableCors({
-    origin: ['http://localhost:3000', 'http://localhost:3001'],
+    origin: [clientUrl],
     credentials: true,
   })
 

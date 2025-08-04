@@ -25,6 +25,7 @@ services:
       - GOOGLE_CLIENT_SECRET
       - GOOGLE_REDIRECT_URI
       - ENCRYPTION_KEY
+      - CLIENT_URL=http://localhost:3001
     ports:
       - "${SERVER_PORT:-3000}:3000"
       - '1339:1339'

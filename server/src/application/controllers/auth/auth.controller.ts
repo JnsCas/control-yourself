@@ -1,8 +1,9 @@
-import { Controller, Query, Get, Res } from '@nestjs/common'
-import { OAuth2Client } from 'google-auth-library'
-import { FastifyReply } from 'fastify'
 import { UsersService } from '@jnscas/cy/src/domain/users/users.service'
 import { TokenEncryptionService } from '@jnscas/cy/src/infrastructure/encryption/token-encryption.service'
+import { Controller, Get, Post, Query, Res } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
+import { FastifyReply } from 'fastify'
+import { OAuth2Client } from 'google-auth-library'
 import { User } from 'src/domain/users/entities/user.entity'
 
 @Controller('auth')
@@ -11,6 +12,7 @@ export class OAuth2Controller {
     private readonly oAuth2Client: OAuth2Client,
     private readonly usersService: UsersService,
     private readonly tokenEncryptionService: TokenEncryptionService,
+    private readonly configService: ConfigService,
   ) {}
 
   @Get('login')
@@ -36,6 +38,18 @@ export class OAuth2Controller {
     return res.send({ authUrl })
   }
 
+  @Post('logout')
+  async logout(@Res() res: FastifyReply) {
+    const isProduction = this.configService.get('NODE_ENV') === 'production'
+
+    res.header('Set-Cookie', [
+      `Authorization=; Path=/; Max-Age=0; SameSite=Lax${isProduction ? '; Secure' : ''}`,
+      `email=; Path=/; Max-Age=0; SameSite=Lax${isProduction ? '; Secure' : ''}`,
+    ])
+
+    return res.send({ message: 'Logged out successfully' })
+  }
+
   @Get('callback')
   async handleGoogleCallback(
     @Query('code') code: string,
@@ -50,12 +64,14 @@ export class OAuth2Controller {
 
     const email = await this.callbackEmail(tokens)
 
+    const isProduction = this.configService.get('NODE_ENV') === 'production'
+
     res.header('Set-Cookie', [
-      `auth-token=${tokens.access_token}; HttpOnly; Path=/; Max-Age=3600; SameSite=Lax${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`,
-      `email=${email}; HttpOnly; Path=/; Max-Age=3600; SameSite=Lax${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`,
+      `Authorization=Bearer ${tokens.access_token}; Path=/; Max-Age=3600; SameSite=Lax${isProduction ? '; Secure' : ''}`,
+      `email=${email}; Path=/; Max-Age=3600; SameSite=Lax${isProduction ? '; Secure' : ''}`,
     ])
 
-    res.header('Location', 'http://localhost:3001/')
+    res.header('Location', `${this.configService.get('CLIENT_URL')}/`)
     res.status(302).send()
   }
 
