@@ -1,13 +1,20 @@
 import { config } from './config'
 
+async function publicGet(url: string) {
+  return fetch(`${config.apiUrl}${url}`, {
+    method: 'GET',
+  })
+}
+
 async function get(url: string) {
   return fetchWithAuth(url, { method: 'GET' })
 }
 
-async function post(url: string, body: any) {
+async function post(url: string, body: any, options: RequestInit = {}) {
   return fetchWithAuth(url, {
     method: 'POST',
     body: JSON.stringify(body),
+    ...options,
   })
 }
 
@@ -27,6 +34,7 @@ function getBearerAuthorizationCookie() {
 }
 
 export default {
+  publicGet,
   get,
   post,
 }

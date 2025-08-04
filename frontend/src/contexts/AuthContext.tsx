@@ -1,7 +1,6 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { config } from '@/lib/config';
 import { useRouter } from 'next/navigation';
 import apiClient from '@/lib/apiClient';
 
@@ -40,12 +39,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(data.user);
       } else {
         setUser(null);
-        router.push('/login');
+        router.replace('/login');
       }
     } catch (error) {
       console.error('Error checking auth status:', error);
       setUser(null);
-      router.push('/login');
+      router.replace('/login');
     } finally {
       setLoading(false);
     }
@@ -54,9 +53,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${config.apiUrl}/auth/web/login`);
+      const response = await apiClient.publicGet(`/auth/web/login`);
       const data = await response.json();
-      window.location.replace(data.authUrl);
+      router.replace(data.authUrl);
     } catch (error) {
       console.error('Error during login:', error);
     } finally {
@@ -67,17 +66,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     try {
       setUser(null);
-      setLoading(false);
       
-      await fetch(`${config.apiUrl}/auth/logout`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-      
-      router.push('/login');
+      await apiClient.post(`/auth/logout`, {}, { credentials: 'include' });
+
+      router.replace('/login');
     } catch (error) {
       console.error('Error during logout:', error);
-      router.push('/login');
+      router.replace('/login');
+    } finally {
+      setLoading(false);
     }
   };
 

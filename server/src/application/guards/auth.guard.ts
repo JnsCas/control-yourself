@@ -16,7 +16,6 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException()
     }
 
-    console.log('token', token)
     const decoded = await this.oAuth2Client.getTokenInfo(token)
     if (!decoded) {
       throw new UnauthorizedException()
