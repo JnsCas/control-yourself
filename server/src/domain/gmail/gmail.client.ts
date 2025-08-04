@@ -6,6 +6,7 @@ import { User } from '@jnscas/cy/src/domain/users/entities/user.entity'
 import { GetMessageResponse } from '@jnscas/cy/src/domain/gmail/responses/get-message.response'
 import { TokenEncryptionService } from '@jnscas/cy/src/infrastructure/encryption/token-encryption.service'
 import { GmailAuthException } from '@jnscas/cy/src/domain/gmail/gmail-auth.exception'
+import { ConfigService } from '@nestjs/config'
 
 @Injectable()
 export class GmailClient {
@@ -15,13 +16,14 @@ export class GmailClient {
   constructor(
     private readonly oauth2Client: OAuth2Client,
     private readonly tokenEncryptionService: TokenEncryptionService,
+    private readonly configService: ConfigService,
   ) {
     this.gmail = google.gmail({ version: 'v1', auth: this.oauth2Client })
   }
 
   async fetchEmailsIds(user: User, sinceDate?: Date): Promise<string[]> {
     return this.executeWithRetry(user, async () => {
-      let query = `from:${process.env.EMAIL_FROM} subject:${process.env.EMAIL_SUBJECT}`
+      let query = `from:${this.configService.get('EMAIL_FROM')} subject:${this.configService.get('EMAIL_SUBJECT')}`
       if (sinceDate) {
         query += ` after:${Math.floor(sinceDate.getTime() / 1000)}`
       }

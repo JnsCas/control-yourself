@@ -1,8 +1,9 @@
+import { AuthProvider } from "@/contexts/AuthContext";
+import { validateConfig } from "@/lib/config";
 import type { Metadata } from "next";
+import { ThemeProvider } from "next-themes";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { ThemeProvider } from "next-themes";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,6 +25,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  validateConfig();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body
