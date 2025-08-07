@@ -23,6 +23,7 @@ function fetchWithAuth(url: string, options: RequestInit) {
     ...options,
     headers: {
       Authorization: `${getBearerAuthorizationCookie()}`,
+      'Content-Type': 'application/json',
     },
   })
 }
